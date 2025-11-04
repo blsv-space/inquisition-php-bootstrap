@@ -1,0 +1,211 @@
+<?php
+
+namespace App\Module\Identity\Domain\User\Service;
+
+use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
+use App\Module\Identity\Domain\RefreshToken\Service\RefreshTokenService;
+use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
+use App\Module\Identity\Domain\User\DTO\JwtTokenPayloadDTO;
+use App\Module\Identity\Domain\User\DTO\LoginResponseDTO;
+use App\Module\Identity\Domain\User\Entity\User;
+use App\Module\Identity\Domain\User\ValueObject\UserId;
+use App\Module\Identity\Infrastructure\Security\PasswordHasher;
+use App\Shared\Infrastructure\Security\Exception\JwtInvalidTokenException;
+use App\Shared\Infrastructure\Security\Exception\JwtTokenExpiredException;
+use App\Shared\Infrastructure\Security\JwtAlgoEnum;
+use App\Shared\Infrastructure\Security\JwtTokenGenerator;
+use DateInterval;
+use DateMalformedIntervalStringException;
+use Exception;
+use Inquisition\Core\Domain\Service\DomainServiceInterface;
+use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use Inquisition\Foundation\Config\Config;
+use Inquisition\Foundation\Singleton\SingletonTrait;
+use RuntimeException;
+
+final class AuthDomainService
+    implements DomainServiceInterface
+{
+    use SingletonTrait;
+
+    private const string JWT_TTL_DEFAULT = '1 day';
+    private const string REFRESH_TTL_DEFAULT = '30 days';
+
+    private PasswordHasher $passwordHasher;
+    private JwtTokenGenerator $jwtTokenGenerator;
+    private RefreshTokenService $refreshTokenService;
+    private UserDomainService $userDomainService;
+    private Config $config;
+
+    public function __construct()
+    {
+        $this->passwordHasher = PasswordHasher::getInstance();
+        $this->jwtTokenGenerator = JwtTokenGenerator::getInstance();
+        $this->refreshTokenService = RefreshTokenService::getInstance();
+        $this->userDomainService = UserDomainService::getInstance();
+        $this->config = Config::getInstance();
+    }
+
+    /**
+     * @param string $password
+     *
+     * @return string
+     */
+    public function hashPassword(string $password): string
+    {
+        return $this->passwordHasher->hash($password);
+    }
+
+    /**
+     * @param User $user
+     * @param string $password
+     *
+     * @return bool
+     */
+    public function verifyPassword(User $user, string $password): bool
+    {
+        return $this->passwordHasher->hashIsEqual($user->hashedPassword, $this->hashPassword($password));
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return LoginResponseDTO
+     *
+     * @throws DateMalformedIntervalStringException
+     * @throws PersistenceException
+     */
+    public function login(User $user): LoginResponseDTO
+    {
+        $jwtTokenPayload = new JwtTokenPayloadDTO(
+            userId: $user->id,
+        );
+
+        $jwtSecret = $this->getJwtSecret();
+        $jwtTtl = $this->getJwtTtl();
+        $jwtAlgorithm = $this->getJwtAlgorithm();
+
+        $jwtToken = $this->jwtTokenGenerator->generate(
+            secret: $jwtSecret,
+            payload: $jwtTokenPayload->getAsArray(),
+            ttl: $jwtTtl,
+            algoEnum: JwtAlgoEnum::tryFrom($jwtAlgorithm),
+        );
+
+        try {
+            $refreshTtl = new DateInterval($this->config->get('security.refresh_token.time_to_live', self::REFRESH_TTL_DEFAULT));
+        } catch (Exception $_) {
+            throw new RuntimeException('Invalid time to live format. Should be set in config in security.refresh_token.time_to_live.');
+        }
+
+        $refreshToken = $this->refreshTokenService->createRefreshToken(
+            userId: $user->id,
+            expiresIn: $refreshTtl,
+        );
+
+        return new LoginResponseDTO(
+            jwtToken: $jwtToken,
+            refreshToken: $refreshToken->token->toRaw(),
+        );
+    }
+
+    /**
+     * @param User $user
+     * @return void
+     * @throws PersistenceException
+     */
+    public function logout(User $user): void
+    {
+        $this->refreshTokenService->removeRefreshTokenByUser($user);
+    }
+
+    /**
+     * @param Token $token
+     * @return LoginResponseDTO
+     * @throws DateMalformedIntervalStringException
+     * @throws PersistenceException
+     * @throws RefreshTokenException
+     */
+    public function refreshToken(Token $token): LoginResponseDTO
+    {
+        $refreshToken = $this->refreshTokenService->findByToken($token, true);
+
+        $this->refreshTokenService->refreshTokenValidate($refreshToken);
+
+        $user = $this->userDomainService->findUserById($refreshToken->userId);
+
+        if (!$user) {
+            throw new RefreshTokenException('User not found.');
+        }
+
+        $loginResponseDTO = $this->login($user);
+
+        $this->refreshTokenService->removeRefreshToken($token);
+
+        return $loginResponseDTO;
+    }
+
+    /**
+     * @param Token $token
+     * @return User
+     * @throws JwtInvalidTokenException
+     * @throws JwtTokenExpiredException
+     * @throws PersistenceException
+     */
+    public function authByJwtToken(Token $token): User
+    {
+        $payload = $this->jwtTokenGenerator->verify($token->toRaw(), $this->getJwtSecret());
+        if (!array_key_exists('user_id', $payload)) {
+            throw new JwtInvalidTokenException('Invalid JWT token.');
+        }
+        $userID = UserId::fromRaw($payload['user_id']);
+
+        $user = $this->userDomainService->findUserById($userID);
+
+        if (!$user) {
+            throw new JwtInvalidTokenException('User not found.');
+        }
+
+        return $user;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getJwtSecret(): mixed
+    {
+        $jwtSecret = $this->config->get('security.jwt.secret');
+        if (empty($jwtSecret)) {
+            throw new RuntimeException('JWT secret is not set in security.jwt.secret.');
+        }
+
+        return $jwtSecret;
+    }
+
+    /**
+     * @return DateInterval
+     */
+    public function getJwtTtl(): DateInterval
+    {
+        try {
+            $jwtTtl = new DateInterval($this->config->get('security.jwt.time_to_live', self::JWT_TTL_DEFAULT));
+        } catch (Exception $_) {
+            throw new RuntimeException('Invalid time to live format. Should be set in config in security.jwt.time_to_live.');
+        }
+
+        return $jwtTtl;
+    }
+
+    /**
+     * @return JwtAlgoEnum|mixed|null
+     */
+    public function getJwtAlgorithm(): mixed
+    {
+        $jwtAlgorithm = $this->config->get('security.jwt.algo', 'HS256');
+        if (!empty($jwtAlgorithm) && !in_array($jwtAlgorithm, JwtAlgoEnum::cases(), true)) {
+            throw new RuntimeException('Invalid JWT algorithm. Should be set in config in security.jwt.algo.');
+        }
+
+        return $jwtAlgorithm;
+    }
+}
