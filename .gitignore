@@ -1,0 +1,11 @@
+/storage/*.key
+/vendor
+.env
+.env.test
+.env.backup
+.phpunit.result.cache
+/.idea
+/.vscode
+*.rnd
+
+/var
