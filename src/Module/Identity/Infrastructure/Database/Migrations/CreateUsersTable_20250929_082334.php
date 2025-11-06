@@ -12,7 +12,7 @@ readonly class CreateUsersTable_20250929_082334 extends AbstractMigration
         $this->query('
             CREATE TABLE `identityUsers` (
                 `id` INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                `userName` varchar(255) NOT NULL,
+                `userName` varchar(255) NOT NULL UNIQUE,
                 `hashedPassword` varchar(255) NOT NULL,
                 `createdAt` datatime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `updatedAt` datatime NOT NULL DEFAULT CURRENT_TIMESTAMP

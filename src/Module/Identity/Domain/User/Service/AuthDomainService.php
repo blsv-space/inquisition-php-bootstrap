@@ -155,10 +155,10 @@ final class AuthDomainService
     public function authByJwtToken(Token $token): User
     {
         $payload = $this->jwtTokenGenerator->verify($token->toRaw(), $this->getJwtSecret());
-        if (!array_key_exists('user_id', $payload)) {
+        if (!array_key_exists('userId', $payload)) {
             throw new JwtInvalidTokenException('Invalid JWT token.');
         }
-        $userID = UserId::fromRaw($payload['user_id']);
+        $userID = UserId::fromRaw($payload['userId']);
 
         $user = $this->userDomainService->findUserById($userID);
 

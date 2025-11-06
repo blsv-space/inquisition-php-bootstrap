@@ -8,7 +8,7 @@ use Tests\Shared\UnitTestCase;
 final class HashedPasswordTest extends UnitTestCase
 {
 
-    public function test_it_should_create_a_hashed_password(): void
+    public function testItShouldCreateAHashedPassword(): void
     {
         $hash = sha1($this->faker->password());
 

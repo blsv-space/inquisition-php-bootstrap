@@ -15,7 +15,7 @@ class RefreshToken extends BaseEntityWithId
     public function __construct(
         public UserId          $userId,
         public Token           $token,
-        public ExpirationAt    $expiresAt,
+        public ExpirationAt    $expirationAt,
         public CreatedAt       $createdAt,
         public ?RefreshTokenId $id = null {
             get {

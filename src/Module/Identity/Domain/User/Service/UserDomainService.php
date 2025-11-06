@@ -4,6 +4,7 @@ namespace App\Module\Identity\Domain\User\Service;
 
 use App\Module\Identity\Domain\User\Entity\User;
 use App\Module\Identity\Domain\User\Repository\UserRepositoryInterface;
+use App\Module\Identity\Domain\User\ValueObject\HashedPassword;
 use App\Module\Identity\Domain\User\ValueObject\UserId;
 use App\Module\Identity\Domain\User\ValueObject\UserName;
 use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
@@ -75,13 +76,13 @@ final class UserDomainService
      */
     public function mapArrayToEntity(array $array): User
     {
-        $createdAt = $array['created_at'] ? CreatedAt::fromRaw($array['created_at']) : null;
-        $updateAt = $array['updated_at'] ? UpdatedAt::fromRaw($array['updated_at']) : null;
+        $createdAt = isset($array['createdAt']) ? CreatedAt::fromRaw($array['createdAt']) : null;
+        $updateAt = isset($array['updatedAt']) ? UpdatedAt::fromRaw($array['updatedAt']) : null;
 
         return new User(
-            id: UserId::fromRaw($array['id']),
-            userName: UserName::fromRaw($array['name']),
-            hashedPassword: $array['password'],
+            userName: UserName::fromRaw($array['userName']),
+            hashedPassword: HashedPassword::fromRaw($array['hashedPassword']),
+            id: !empty($array['id']) ? UserId::fromRaw($array['id']) : null,
             createdAt: $createdAt,
             updatedAt: $updateAt,
         );

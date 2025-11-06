@@ -7,7 +7,7 @@ use Tests\Shared\UnitTestCase;
 
 final class UserIdTest extends UnitTestCase
 {
-    public function test_is_should_create_a_user_id(): void
+    public function testIsShouldCreateAUserId(): void
     {
         $id = $this->faker->numberBetween(1, PHP_INT_MAX);
 

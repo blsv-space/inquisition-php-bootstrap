@@ -14,7 +14,7 @@ use Tests\Shared\UnitTestCase;
 final class UserTest extends UnitTestCase
 {
 
-    public function test_it_should_create_a_user(): void
+    public function testItShouldCreateAUser(): void
     {
         $id = $this->faker->numberBetween(1, PHP_INT_MAX);
         $name = $this->faker->userName();
@@ -23,9 +23,9 @@ final class UserTest extends UnitTestCase
         $updateAt = $this->faker->dateTime();
 
         $user = new User(
-            id: UserId::fromRaw($id),
             userName: UserName::fromRaw($name),
             hashedPassword: HashedPassword::fromRaw($password),
+            id: UserId::fromRaw($id),
             createdAt: CreatedAt::fromDateTime($createdAt),
             updatedAt: UpdatedAt::fromDateTime($updateAt),
         );

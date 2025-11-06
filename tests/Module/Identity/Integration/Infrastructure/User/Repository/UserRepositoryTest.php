@@ -7,6 +7,7 @@ use App\Module\Identity\Domain\User\ValueObject\UserId;
 use App\Module\Identity\Domain\User\ValueObject\UserName;
 use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use JsonException;
 use Tests\Module\Identity\Fixture\UserFixture;
 use Tests\Shared\IntegrationTestCase;
 
@@ -14,6 +15,9 @@ class UserRepositoryTest extends IntegrationTestCase
 {
     private UserRepository $repository;
 
+    /**
+     * @return void
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,7 +28,7 @@ class UserRepositoryTest extends IntegrationTestCase
      * @return void
      * @throws PersistenceException
      */
-    public function test_it_can_save_a_user(): void
+    public function testItCanSaveAUser(): void
     {
         $name = $this->faker->name;
 
@@ -36,7 +40,11 @@ class UserRepositoryTest extends IntegrationTestCase
         ]);
     }
 
-    public function test_it_can_find_a_user_by_id(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItCanFindAUserById(): void
     {
         $id = $this->faker->numberBetween(1, 1_000_000);
 
@@ -49,7 +57,11 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertEquals($id, $foundUser->getId()?->toRaw());
     }
 
-    public function test_it_returns_null_when_user_not_found(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItReturnsNullWhenUserNotFound(): void
     {
         $nonExistentId = UserId::fromRaw($this->faker->numberBetween(1, 1_000_000));
 
@@ -58,7 +70,12 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertNull($foundUser);
     }
 
-    public function test_it_can_find_a_user_by_name(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     * @throws JsonException
+     */
+    public function testItCanFindAUserByName(): void
     {
         $userName = UserName::fromRaw($this->faker->userName);
         $user = UserFixture::create([
@@ -72,7 +89,12 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertTrue($userName->equals($user->userName));
     }
 
-    public function test_it_can_update_a_user(): void
+    /**
+     * @return void
+     * @throws JsonException
+     * @throws PersistenceException
+     */
+    public function testItCanUpdateAUser(): void
     {
         $user = UserFixture::create([], true);
         $userName = $user->userName;
@@ -85,7 +107,11 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertTrue($userNameUpdated->equals($updatedUser->userName));
     }
 
-    public function test_it_can_delete_a_user(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItCanDeleteAUser(): void
     {
         $user = UserFixture::create([], true);
 
@@ -98,7 +124,11 @@ class UserRepositoryTest extends IntegrationTestCase
         ]);
     }
 
-    public function test_it_can_check_if_user_exists(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItCanCheckIfUserExists(): void
     {
         $user = UserFixture::create([], true);
 
@@ -109,7 +139,11 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertTrue($exists);
     }
 
-    public function test_it_returns_false_when_user_does_not_exist(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItReturnsFalseWhenUserDoesNotExist(): void
     {
         $nonExistentId = UserId::fromRaw($this->faker->numberBetween(1, 1_000_000));
 
@@ -118,7 +152,11 @@ class UserRepositoryTest extends IntegrationTestCase
         $this->assertFalse($exists);
     }
 
-    public function test_it_can_find_all_users(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
+    public function testItCanFindAllUsers(): void
     {
         $user1 = UserFixture::create([], true);
         $user2 = UserFixture::create([], true);

@@ -10,6 +10,7 @@ use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
 use App\Module\Identity\Domain\User\ValueObject\UserId;
 use App\Module\Identity\Infrastructure\Repository\AbstractIdentityRepository;
 use App\Shared\Domain\ValueObject\CreatedAt;
+use DateTimeImmutable;
 use Inquisition\Core\Domain\Entity\EntityInterface;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 use Inquisition\Core\Infrastructure\Persistence\Repository\QueryCriteria;
@@ -45,11 +46,11 @@ class RefreshTokenRepository extends AbstractIdentityRepository
     protected function mapRowToEntity(array $row): EntityInterface
     {
         return new RefreshToken(
-            id: RefreshTokenId::fromRaw($row['id']),
-            userId: UserId::fromRaw($row['userId']),
+            userId: UserId::fromRaw((int) $row['userId']),
             token: Token::fromRaw($row['token']),
-            expiresAt: ExpirationAt::fromRaw($row['expiresAt']),
+            expirationAt: ExpirationAt::fromRaw($row['expirationAt']),
             createdAt: CreatedAt::fromRaw($row['createdAt']),
+            id: RefreshTokenId::fromRaw($row['id']),
         );
     }
 
@@ -69,10 +70,12 @@ class RefreshTokenRepository extends AbstractIdentityRepository
      */
     public function findByUserId(UserId $userId): ?RefreshToken
     {
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
+
         return $this->findOneBy(
             [
-                new QueryCriteria(field: 'user_id', value: $userId->toRaw()),
-                new QueryCriteria(field: 'expires_at', value: 'NOW()', operator: QueryOperatorEnum::GREATER_THAN),
+                new QueryCriteria(field: 'userId', value: $userId->toRaw()),
+                new QueryCriteria(field: 'expirationAt', value: $now, operator: QueryOperatorEnum::GREATER_THAN),
             ]);
     }
 
@@ -82,8 +85,10 @@ class RefreshTokenRepository extends AbstractIdentityRepository
      */
     public function cleanExpiredTokens(): void
     {
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
+
         $this->removeBy(criteria: [
-            new QueryCriteria(field: 'expires_at', value: 'NOW()', operator: QueryOperatorEnum::LESS_THAN),
+            new QueryCriteria(field: 'expirationAt', value: $now, operator: QueryOperatorEnum::LESS_THAN),
         ]);
     }
 
@@ -96,6 +101,6 @@ class RefreshTokenRepository extends AbstractIdentityRepository
     {
         parent::insert($entity);
 
-        $entity->id = RefreshTokenId::fromRaw($this->connection->connect()->lastInsertId());
+        $entity->id = RefreshTokenId::fromRaw((int) $this->connection->connect()->lastInsertId());
     }
 }

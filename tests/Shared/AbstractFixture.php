@@ -22,7 +22,7 @@ abstract class AbstractFixture
     /**
      * @var int[]
      */
-    protected static array $idPool;
+    protected static array $idPool = [];
 
     public static abstract function create(array $attributes = [], bool $persist = false);
 
@@ -57,7 +57,7 @@ abstract class AbstractFixture
             return $id;
         }
 
-        if (!isset(self::$idPool)) {
+        if (empty(self::$idPool)) {
             try {
                 self::$idPool = [random_int(self::MIN_ID, self::MAX_ID)];;
             } catch (RandomException $_) {
@@ -92,6 +92,18 @@ abstract class AbstractFixture
     public static function getIds(): array
     {
         return self::$idPool;
+    }
+
+    /**
+     * @return int
+     */
+    public static function getId(): int
+    {
+        if (count(self::$idPool) === 0) {
+            static::create(persist: true);
+        }
+
+        return self::$idPool[array_rand(self::$idPool)];
     }
 
     /**

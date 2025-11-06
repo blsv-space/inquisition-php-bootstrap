@@ -49,7 +49,7 @@ final class RefreshTokenService
         $refreshToken = new RefreshToken(
             userId: $userId,
             token: Token::fromRaw($token),
-            expiresAt: ExpirationAt::fromDateTime($expiresAt),
+            expirationAt: ExpirationAt::fromDateTime($expiresAt),
             createdAt: CreatedAt::now(),
         );
 
@@ -106,7 +106,7 @@ final class RefreshTokenService
      */
     public function refreshTokenValidate(RefreshToken $refreshToken): void
     {
-        if ($refreshToken->expiresAt->value < new DateTimeImmutable()) {
+        if ($refreshToken->expirationAt->value < new DateTimeImmutable()) {
             throw new RefreshTokenException('Refresh token expired');
         }
     }

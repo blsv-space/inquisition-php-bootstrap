@@ -7,7 +7,7 @@ use Tests\Shared\UnitTestCase;
 
 final class UserNameTest extends UnitTestCase
 {
-    public function test_it_should_create_a_user_name(): void
+    public function testItShouldCreateAUserName(): void
     {
         $name = $this->faker->userName();
 

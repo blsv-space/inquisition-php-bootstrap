@@ -15,6 +15,6 @@ enum PasswordHashAlgoEnum: string
 
     public function getPHPConstant(): string
     {
-        return 'PASSWORD_' . strtoupper($this->value);
+        return constant('PASSWORD_' . strtoupper($this->value));
     }
 }

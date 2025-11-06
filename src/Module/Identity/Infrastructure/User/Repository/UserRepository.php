@@ -42,9 +42,9 @@ class UserRepository extends AbstractIdentityRepository
     protected function mapRowToEntity(array $row): EntityInterface
     {
         return new User(
-            id: UserId::fromRaw($row['id']),
             userName: UserName::fromRaw($row['userName']),
             hashedPassword: HashedPassword::fromRaw($row['hashedPassword']),
+            id: UserId::fromRaw($row['id']),
             createdAt: CreatedAt::fromRaw($row['createdAt']),
             updatedAt: UpdatedAt::fromRaw($row['updatedAt']),
         );
