@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/blsv-space/inquisition-php.git",
-                "reference": "12d6eaecafc14433aefaa8cd2c6a016edddce5a3"
+                "reference": "3fcfbb7525eac38958debf4000f79a57694e208d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/blsv-space/inquisition-php/zipball/12d6eaecafc14433aefaa8cd2c6a016edddce5a3",
-                "reference": "12d6eaecafc14433aefaa8cd2c6a016edddce5a3",
+                "url": "https://api.github.com/repos/blsv-space/inquisition-php/zipball/3fcfbb7525eac38958debf4000f79a57694e208d",
+                "reference": "3fcfbb7525eac38958debf4000f79a57694e208d",
                 "shasum": ""
             },
             "require": {
@@ -56,7 +56,7 @@
                 "source": "https://github.com/blsv-space/inquisition-php/tree/bootstrap",
                 "issues": "https://github.com/blsv-space/inquisition-php/issues"
             },
-            "time": "2025-11-06T04:10:21+00:00"
+            "time": "2025-11-08T06:21:39+00:00"
         }
     ],
     "packages-dev": [

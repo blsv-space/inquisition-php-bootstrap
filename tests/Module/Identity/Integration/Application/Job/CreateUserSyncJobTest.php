@@ -34,7 +34,7 @@ class CreateUserSyncJobTest extends IntegrationTestCase
             'userName' => $this->faker->userName(),
             'password' => $this->faker->password(),
         ];
-        UserFixture::create(['userName' => $payload['userName']], true);
+        UserFixture::create([UserFixture::USER_NAME => $payload['userName']], true);
         $this->expectException(PDOException::class);
         $createUserSyncJob = new CreateUserSyncJob($payload);
         $createUserSyncJob->handle();

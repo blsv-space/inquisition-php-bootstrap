@@ -11,9 +11,11 @@ function generateSecret(int $length = 64): string
 
 function replaceSecretsInEnvFiles(): void
 {
-    $envFiles = glob('.env.*');
+    $envFiles = glob('.env*');
     foreach ($envFiles as $file) {
-        if (str_contains($file, 'default')) {
+        if (str_contains($file, 'default')
+            || !is_file($file)
+        ) {
             continue;
         }
         replaceSecretsInEnvFile($file);

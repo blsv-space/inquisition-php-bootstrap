@@ -15,6 +15,12 @@ use Tests\Shared\AbstractFixture;
 
 class RefreshTokenFixture extends AbstractFixture
 {
+    public const string USER_ID = 'userId';
+    public const string TOKEN = 'token';
+    public const string EXPIRATION_AT = 'expirationAt';
+    public const string CREATED_AT = 'createdAt';
+    public const string ID = 'id';
+
     /**
      * @param array $attributes
      * @param bool $persist
@@ -26,15 +32,16 @@ class RefreshTokenFixture extends AbstractFixture
     public static function create(array $attributes = [], bool $persist = false): RefreshToken
     {
         $refreshToken = new RefreshToken(
-            userId: UserId::fromRaw($attributes['userId'] ?? UserFixture::getId()),
-            token: Token::fromRaw($attributes['token'] ?? static::faker()->sha256()),
+            userId: UserId::fromRaw($attributes[self::USER_ID] ?? UserFixture::getId()),
+            token: Token::fromRaw($attributes[self::TOKEN] ?? static::faker()->sha256()),
             expirationAt: ExpirationAt::fromRaw(
-                $attributes['expirationAt']
+                $attributes[self::EXPIRATION_AT]
                 ?? static::faker()->dateTimeBetween('+1 hour', '+1 day')
                 ->format(DateTime::FORMAT)
             ),
-            createdAt: CreatedAt::fromRaw($attributes['createdAt'] ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
-            id: RefreshTokenId::fromRaw(static::generateId($attributes['id'] ?? null)),
+            createdAt: CreatedAt::fromRaw($attributes[self::CREATED_AT]
+                ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
+            id: RefreshTokenId::fromRaw(static::generateId($attributes[self::ID] ?? null)),
         );
 
         if ($persist) {

@@ -27,10 +27,10 @@ class RefreshTokenRepositoryTest extends IntegrationTestCase
     {
         $token = $this->faker->sha256();
 
-        $refreshToken = RefreshTokenFixture::create(['token' => $token]);
+        $refreshToken = RefreshTokenFixture::create([RefreshTokenFixture::TOKEN => $token]);
 
         $this->repository->save($refreshToken);
-        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), ['token' => $token]);
+        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), [RefreshTokenFixture::TOKEN => $token]);
     }
 
     /**
@@ -41,7 +41,7 @@ class RefreshTokenRepositoryTest extends IntegrationTestCase
     {
         $user = UserFixture::create(persist: true);
 
-        $refreshToken = RefreshTokenFixture::create(['userId' => $user->id->toRaw()]);
+        $refreshToken = RefreshTokenFixture::create([RefreshTokenFixture::USER_ID => $user->id->toRaw()]);
         $this->repository->save($refreshToken);
 
         $foundRefreshToken = $this->repository->findByUserId($user->id);
@@ -57,7 +57,8 @@ class RefreshTokenRepositoryTest extends IntegrationTestCase
     public function testItCanCleanExpiredRefreshTokens(): void
     {
         RefreshTokenFixture::create(
-            attributes: ['expirationAt' => $this->faker->dateTime('-1 hour')->format(DateTime::FORMAT)],
+            attributes: [RefreshTokenFixture::EXPIRATION_AT => $this->faker->dateTime('-1 hour')
+                ->format(DateTime::FORMAT)],
             persist: true
         );
         RefreshTokenFixture::create(persist: true);

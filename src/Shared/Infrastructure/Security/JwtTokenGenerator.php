@@ -26,15 +26,14 @@ class JwtTokenGenerator
     /**
      * @param string $secret
      * @param array|null $payload
-     * @param DateInterval|null $ttl seconds
+     * @param DateInterval|null $ttl
      * @param JwtAlgoEnum|null $algoEnum
      * @return string
-     * @throws DateMalformedIntervalStringException
      */
     public function generate(string $secret, ?array $payload, ?DateInterval $ttl = null, ?JwtAlgoEnum $algoEnum = null): string
     {
         $payload = $payload ?? [];
-        $ttlInterval = $ttl ?? new DateInterval('PT' . self::TTL . 'S');
+        $ttlInterval = $ttl ?? DateInterval::createFromDateString('PT' . self::TTL . 'S');
         $algoEnum = $algoEnum ?? JwtAlgoEnum::default();
 
         $header = [self::PARAM_ALGORITHM => $algoEnum->name, self::PARAM_TYPE => 'JWT'];

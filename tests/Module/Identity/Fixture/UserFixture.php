@@ -15,6 +15,12 @@ use Tests\Shared\AbstractFixture;
 
 class UserFixture extends AbstractFixture
 {
+    public const string USER_NAME = 'userName';
+    public const string HASHED_PASSWORD = 'hashedPassword';
+    public const string ID = 'id';
+    public const string CREATED_AT = 'createdAt';
+    public const string UPDATED_AT = 'updatedAt';
+
     /**
      * @param array $attributes
      * @param bool $persist
@@ -26,11 +32,13 @@ class UserFixture extends AbstractFixture
     public static function create(array $attributes = [], bool $persist = false): User
     {
         $user = new User(
-            userName: UserName::fromRaw($attributes['userName'] ?? static::faker()->userName()),
-            hashedPassword: HashedPassword::fromRaw($attributes['hashedPassword'] ?? static::faker()->sha256()),
-            id: UserId::fromRaw(static::generateId($attributes['id'] ?? null)),
-            createdAt: CreatedAt::fromRaw($attributes['createdAt'] ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
-            updatedAt: UpdatedAt::fromRaw($attributes['updateAt'] ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
+            userName: UserName::fromRaw($attributes[self::USER_NAME] ?? static::faker()->userName()),
+            hashedPassword: HashedPassword::fromRaw($attributes[self::HASHED_PASSWORD] ?? static::faker()->sha256()),
+            id: UserId::fromRaw(static::generateId($attributes[self::ID] ?? null)),
+            createdAt: CreatedAt::fromRaw($attributes[self::CREATED_AT]
+                ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
+            updatedAt: UpdatedAt::fromRaw($attributes[self::UPDATED_AT]
+                ?? static::faker()->dateTime()->format(DateTime::FORMAT)),
         );
 
         if ($persist) {

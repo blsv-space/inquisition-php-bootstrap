@@ -64,15 +64,15 @@ final class AuthDomainService
      */
     public function verifyPassword(User $user, string $password): bool
     {
-        return $this->passwordHasher->hashIsEqual($user->hashedPassword, $this->hashPassword($password));
+        return $this->passwordHasher->verify(
+            plain: $password,
+            hashed: $user->hashedPassword->toRaw()
+        );
     }
 
     /**
      * @param User $user
-     *
      * @return LoginResponseDTO
-     *
-     * @throws DateMalformedIntervalStringException
      * @throws PersistenceException
      */
     public function login(User $user): LoginResponseDTO
@@ -89,11 +89,11 @@ final class AuthDomainService
             secret: $jwtSecret,
             payload: $jwtTokenPayload->getAsArray(),
             ttl: $jwtTtl,
-            algoEnum: JwtAlgoEnum::tryFrom($jwtAlgorithm),
+            algoEnum: $jwtAlgorithm,
         );
 
         try {
-            $refreshTtl = new DateInterval($this->config->get('security.refresh_token.time_to_live', self::REFRESH_TTL_DEFAULT));
+            $refreshTtl = DateInterval::createFromDateString($this->config->getByPath('security.refresh_token.time_to_live', self::REFRESH_TTL_DEFAULT));
         } catch (Exception $_) {
             throw new RuntimeException('Invalid time to live format. Should be set in config in security.refresh_token.time_to_live.');
         }
@@ -174,7 +174,7 @@ final class AuthDomainService
      */
     public function getJwtSecret(): mixed
     {
-        $jwtSecret = $this->config->get('security.jwt.secret');
+        $jwtSecret = $this->config->getByPath('security.jwt.secret');
         if (empty($jwtSecret)) {
             throw new RuntimeException('JWT secret is not set in security.jwt.secret.');
         }
@@ -188,7 +188,7 @@ final class AuthDomainService
     public function getJwtTtl(): DateInterval
     {
         try {
-            $jwtTtl = new DateInterval($this->config->get('security.jwt.time_to_live', self::JWT_TTL_DEFAULT));
+            $jwtTtl = DateInterval::createFromDateString($this->config->getByPath('security.jwt.time_to_live', self::JWT_TTL_DEFAULT));
         } catch (Exception $_) {
             throw new RuntimeException('Invalid time to live format. Should be set in config in security.jwt.time_to_live.');
         }
@@ -197,15 +197,16 @@ final class AuthDomainService
     }
 
     /**
-     * @return JwtAlgoEnum|mixed|null
+     * @return JwtAlgoEnum
      */
-    public function getJwtAlgorithm(): mixed
+    public function getJwtAlgorithm(): JwtAlgoEnum
     {
-        $jwtAlgorithm = $this->config->get('security.jwt.algo', 'HS256');
-        if (!empty($jwtAlgorithm) && !in_array($jwtAlgorithm, JwtAlgoEnum::cases(), true)) {
+        $jwtAlgorithm = $this->config->getByPath('security.jwt.algo', 'sha256');
+        $jwtAlgoEnum = JwtAlgoEnum::tryFrom($jwtAlgorithm);
+        if (!$jwtAlgoEnum) {
             throw new RuntimeException('Invalid JWT algorithm. Should be set in config in security.jwt.algo.');
         }
 
-        return $jwtAlgorithm;
+        return $jwtAlgoEnum;
     }
 }

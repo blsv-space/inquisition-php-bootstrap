@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\Infrastructure\Security\JwtAlgoEnum;
 use Inquisition\Foundation\Config\Config;
 
 $config = Config::getInstance();
@@ -14,7 +15,7 @@ $config->merge([
         'jwt' => [
             'time_to_live' => '1 day', //https://www.php.net/manual/en/dateinterval.format.php
             'secret' => null,
-            'algo' => 'HS256',
+            'algo' => JwtAlgoEnum::HS256->value,
         ],
     ]
 ]);

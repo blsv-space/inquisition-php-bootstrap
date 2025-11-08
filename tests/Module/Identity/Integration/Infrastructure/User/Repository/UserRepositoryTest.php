@@ -32,7 +32,7 @@ class UserRepositoryTest extends IntegrationTestCase
     {
         $name = $this->faker->name;
 
-        $user = UserFixture::create(['userName' => $name]);
+        $user = UserFixture::create([UserFixture::USER_NAME => $name]);
         $this->repository->save($user);
 
         $this->assertDatabaseHas(UserFixture::getTableName(), [
@@ -48,7 +48,7 @@ class UserRepositoryTest extends IntegrationTestCase
     {
         $id = $this->faker->numberBetween(1, 1_000_000);
 
-        $user = UserFixture::create(['id' => $id]);
+        $user = UserFixture::create([UserFixture::ID => $id]);
         $this->repository->save($user);
 
         $foundUser = $this->repository->findById(UserId::fromRaw($id));
@@ -79,7 +79,7 @@ class UserRepositoryTest extends IntegrationTestCase
     {
         $userName = UserName::fromRaw($this->faker->userName);
         $user = UserFixture::create([
-            'userName' => $userName->toRaw(),
+            UserFixture::USER_NAME => $userName->toRaw(),
         ]);
         $this->repository->save($user);
 

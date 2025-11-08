@@ -34,7 +34,12 @@ final class PasswordHasher
         return password_verify($plain, $hashed);
     }
 
-    public function hashIsEqual($hashA, $hashB): bool
+    /**
+     * @param string $hashA
+     * @param string $hashB
+     * @return bool
+     */
+    public function hashIsEqual(string $hashA, string $hashB): bool
     {
         return hash_equals($hashA, $hashB);
     }
