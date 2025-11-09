@@ -15,11 +15,11 @@ use Tests\Shared\AbstractFixture;
 
 class RefreshTokenFixture extends AbstractFixture
 {
-    public const string USER_ID = 'userId';
-    public const string TOKEN = 'token';
-    public const string EXPIRATION_AT = 'expirationAt';
-    public const string CREATED_AT = 'createdAt';
-    public const string ID = 'id';
+    public const string USER_ID = RefreshTokenRepository::FIELD_USER_ID;
+    public const string TOKEN = RefreshTokenRepository::FIELD_TOKEN;
+    public const string EXPIRATION_AT = RefreshTokenRepository::FIELD_EXPIRATION_AT;
+    public const string CREATED_AT = RefreshTokenRepository::FIELD_CREATED_AT;
+    public const string ID = RefreshTokenRepository::FIELD_ID;
 
     /**
      * @param array $attributes

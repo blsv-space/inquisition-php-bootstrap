@@ -15,11 +15,11 @@ use Tests\Shared\AbstractFixture;
 
 class UserFixture extends AbstractFixture
 {
-    public const string USER_NAME = 'userName';
-    public const string HASHED_PASSWORD = 'hashedPassword';
-    public const string ID = 'id';
-    public const string CREATED_AT = 'createdAt';
-    public const string UPDATED_AT = 'updatedAt';
+    public const string USER_NAME = UserRepository::FIELD_USER_NAME;
+    public const string HASHED_PASSWORD = UserRepository::FIELD_HASHED_PASSWORD;
+    public const string ID = UserRepository::FIELD_ID;
+    public const string CREATED_AT = UserRepository::FIELD_CREATED_AT;
+    public const string UPDATED_AT = UserRepository::FIELD_UPDATED_AT;
 
     /**
      * @param array $attributes

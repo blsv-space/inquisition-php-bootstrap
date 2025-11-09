@@ -2,6 +2,8 @@
 
 namespace Tests\Shared;
 
+use App\Module\Identity\Application\User\Service\AuthApplicationService;
+use App\Module\Identity\Domain\User\Entity\User;
 use Faker\Factory;
 use Faker\Generator;
 use Inquisition\Core\Infrastructure\Migration\MigrationDiscovery;
@@ -11,17 +13,25 @@ use Inquisition\Core\Infrastructure\Persistence\DatabaseManagerFactory;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 use Inquisition\Foundation\Config\Config;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
+use ReflectionProperty;
 use RuntimeException;
 
 abstract class AbstractTestCase extends TestCase
 {
     protected Generator $faker;
 
+    /**
+     * @return void
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
     }
 
+    /**
+     * @return void
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -126,6 +136,17 @@ abstract class AbstractTestCase extends TestCase
     public function resetFixtures(): void
     {
         FixtureRegister::reset();
+    }
+
+    /**
+     * @param User $user
+     * @return void
+     * @throws ReflectionException
+     */
+    public function actAs(User $user): void
+    {
+        $authApplicationService = AuthApplicationService::getInstance();
+        new ReflectionProperty($authApplicationService, 'authUser')->setValue($authApplicationService, $user);
     }
 
 }

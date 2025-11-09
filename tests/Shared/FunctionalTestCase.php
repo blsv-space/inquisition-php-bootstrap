@@ -7,11 +7,16 @@ use Inquisition\Core\Infrastructure\Http\Request\HttpRequest;
 use Inquisition\Core\Infrastructure\Http\Response\HttpResponse;
 use Inquisition\Core\Infrastructure\Http\Router\Exception\RouteNotFoundException;
 use Inquisition\Core\Infrastructure\Http\Router\RequestDispatcher;
+use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 
 class FunctionalTestCase extends AbstractTestCase
 {
     protected RequestDispatcher $dispatcher;
 
+    /**
+     * @return void
+     * @throws PersistenceException
+     */
     public function setUp(): void
     {
         $this->dispatcher = RequestDispatcher::getInstance();

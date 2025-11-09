@@ -2,6 +2,7 @@
 
 namespace App\Module\Identity\Domain\User\Service;
 
+use App\Module\Identity\Domain\RefreshToken\Entity\RefreshToken;
 use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
 use App\Module\Identity\Domain\RefreshToken\Service\RefreshTokenService;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
@@ -62,11 +63,24 @@ final class AuthDomainService
      *
      * @return bool
      */
-    public function verifyPassword(User $user, string $password): bool
+    public function verifyPasswordByUser(User $user, string $password): bool
+    {
+        return $this->verifyPasswordHash(
+            passwordHash: $user->hashedPassword->toRaw(),
+            password: $password,
+        );
+    }
+
+    /**
+     * @param string $passwordHash
+     * @param string $password
+     * @return bool
+     */
+    public function verifyPasswordHash(string $passwordHash, string $password): bool
     {
         return $this->passwordHasher->verify(
             plain: $password,
-            hashed: $user->hashedPassword->toRaw()
+            hashed: $passwordHash,
         );
     }
 
@@ -122,7 +136,6 @@ final class AuthDomainService
     /**
      * @param Token $token
      * @return LoginResponseDTO
-     * @throws DateMalformedIntervalStringException
      * @throws PersistenceException
      * @throws RefreshTokenException
      */
@@ -146,15 +159,16 @@ final class AuthDomainService
     }
 
     /**
-     * @param Token $token
+     * @param string $token
      * @return User
      * @throws JwtInvalidTokenException
      * @throws JwtTokenExpiredException
      * @throws PersistenceException
      */
-    public function authByJwtToken(Token $token): User
+    public function authByJwtToken(string $token): User
     {
-        $payload = $this->jwtTokenGenerator->verify($token->toRaw(), $this->getJwtSecret());
+        $payload = $this->jwtTokenGenerator->verify($token, $this->getJwtSecret());
+
         if (!array_key_exists('userId', $payload)) {
             throw new JwtInvalidTokenException('Invalid JWT token.');
         }

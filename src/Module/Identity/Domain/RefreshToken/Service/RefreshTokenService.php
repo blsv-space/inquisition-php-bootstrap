@@ -29,7 +29,8 @@ final class RefreshTokenService
     private RefreshTokenRepositoryInterface $refreshTokenRepository;
     private OpaqueTokenGeneratorInterface $opaqueTokenGenerator;
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->refreshTokenRepository = RefreshTokenRepository::getInstance();
         $this->opaqueTokenGenerator = new OpaqueTokenGenerator();
     }
@@ -41,9 +42,10 @@ final class RefreshTokenService
      * @throws PersistenceException
      */
     public function createRefreshToken(
-        UserId $userId,
+        UserId       $userId,
         DateInterval $expiresIn,
-    ): RefreshToken {
+    ): RefreshToken
+    {
         $token = $this->opaqueTokenGenerator->generate();
         $expiresAt = DateTimeImmutable::createFromMutable(new DateTime()->add($expiresIn));
         $refreshToken = new RefreshToken(
@@ -65,7 +67,7 @@ final class RefreshTokenService
      */
     public function removeRefreshToken(Token $token): void
     {
-        $this->refreshTokenRepository->removeBy([new QueryCriteria('token', $token)]);
+        $this->refreshTokenRepository->removeBy([new QueryCriteria(RefreshTokenRepository::FIELD_TOKEN, $token)]);
     }
 
     /**
@@ -79,7 +81,7 @@ final class RefreshTokenService
             return;
         }
 
-        $this->refreshTokenRepository->removeBy([new QueryCriteria('user_id', $user->id->toRaw())]);
+        $this->refreshTokenRepository->removeBy([new QueryCriteria(RefreshTokenRepository::FIELD_USER_ID, $user->id->toRaw())]);
     }
 
     /**
@@ -91,7 +93,7 @@ final class RefreshTokenService
      */
     public function findByToken(Token $token, ?bool $throwException = false): ?RefreshToken
     {
-        $refreshToken = $this->refreshTokenRepository->findOneBy([new QueryCriteria('token', $token)]);
+        $refreshToken = $this->refreshTokenRepository->findOneBy([new QueryCriteria(RefreshTokenRepository::FIELD_TOKEN, $token)]);
         if ($throwException && $refreshToken === null) {
             throw new RefreshTokenException('Invalid refresh token');
         }

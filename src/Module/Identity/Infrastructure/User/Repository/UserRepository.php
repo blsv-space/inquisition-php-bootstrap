@@ -27,6 +27,12 @@ class UserRepository extends AbstractIdentityRepository
 {
     use SingletonTrait;
 
+    public const string FIELD_ID = 'id';
+    public const string FIELD_USER_NAME = 'userName';
+    public const string FIELD_HASHED_PASSWORD = 'hashedPassword';
+    public const string FIELD_CREATED_AT = 'createdAt';
+    public const string FIELD_UPDATED_AT = 'updatedAt';
+
     protected const string TABLE_NAME = 'users';
     protected const string ENTITY_CLASS_NAME = User::class;
 
@@ -42,11 +48,11 @@ class UserRepository extends AbstractIdentityRepository
     protected function mapRowToEntity(array $row): EntityInterface
     {
         return new User(
-            userName: UserName::fromRaw($row['userName']),
-            hashedPassword: HashedPassword::fromRaw($row['hashedPassword']),
-            id: UserId::fromRaw($row['id']),
-            createdAt: CreatedAt::fromRaw($row['createdAt']),
-            updatedAt: UpdatedAt::fromRaw($row['updatedAt']),
+            userName: UserName::fromRaw($row[self::FIELD_USER_NAME]),
+            hashedPassword: HashedPassword::fromRaw($row[self::FIELD_HASHED_PASSWORD]),
+            id: UserId::fromRaw($row[self::FIELD_ID]),
+            createdAt: CreatedAt::fromRaw($row[self::FIELD_CREATED_AT]),
+            updatedAt: UpdatedAt::fromRaw($row[self::FIELD_UPDATED_AT]),
         );
     }
 
@@ -68,7 +74,7 @@ class UserRepository extends AbstractIdentityRepository
     {
         return $this->findOneBy(
             [new QueryCriteria(
-                field: 'userName',
+                field: self::FIELD_USER_NAME,
                 value: $userName->toRaw()
             )]);
     }

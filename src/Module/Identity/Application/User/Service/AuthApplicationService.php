@@ -4,6 +4,8 @@ namespace App\Module\Identity\Application\User\Service;
 
 use App\Module\Identity\Application\User\Service\Exception\AuthInvalidPasswordException;
 use App\Module\Identity\Application\User\Service\Exception\AuthUserNotFoundException;
+use App\Module\Identity\Domain\RefreshToken\Entity\RefreshToken;
+use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
 use App\Module\Identity\Domain\User\DTO\LoginResponseDTO;
 use App\Module\Identity\Domain\User\Entity\User;
@@ -41,7 +43,6 @@ class AuthApplicationService
      * @return LoginResponseDTO
      * @throws AuthInvalidPasswordException
      * @throws AuthUserNotFoundException
-     * @throws DateMalformedIntervalStringException
      * @throws PersistenceException
      */
     public function login(string $username, string $password): LoginResponseDTO
@@ -52,7 +53,7 @@ class AuthApplicationService
             throw new AuthUserNotFoundException($userName->toRaw());
         }
 
-        if (!$this->authDomainService->verifyPassword($user, $password)) {
+        if (!$this->authDomainService->verifyPasswordByUser($user, $password)) {
             throw new AuthInvalidPasswordException($userName->toRaw());
         }
 
@@ -60,12 +61,13 @@ class AuthApplicationService
     }
 
     /**
+     * @param User|null $user
      * @return void
      * @throws PersistenceException
      */
-    public function logout(): void
+    public function logout(?User $user = null): void
     {
-        $user = $this->authUser();
+        $user = $user ?? $this->authUser();
         if (!$user) {
             return;
         }
@@ -75,30 +77,43 @@ class AuthApplicationService
     }
 
     /**
-     * @param Token|null $token
+     * @param string|null $token
      * @param bool|null $disableCache
      * @return User|null
      * @throws PersistenceException
      */
-    public function authUser(?Token $token = null, ?bool $disableCache = false): ?User
+    public function authUser(?string $token = null, ?bool $disableCache = false): ?User
     {
         if ($this->authUser && !$disableCache) {
             return $this->authUser;
         }
 
-        if (!$token) {
-            $token = $this->extractTokenFromRequest();
-        }
+        $token = $token ?? $this->extractTokenFromRequest();
 
         if (!$token) {
             return null;
         }
 
+        $this->authUser = $this->authDomainService->authByJwtToken($token);
+
         try {
-            return $this->authDomainService->authByJwtToken($token);
+            $this->authUser = $this->authDomainService->authByJwtToken($token);
         } catch (JwtInvalidTokenException|JwtTokenExpiredException $_) {
             return null;
         }
+
+        return $this->authUser;
+    }
+
+    /**
+     * @param Token $token
+     * @return LoginResponseDTO
+     * @throws PersistenceException
+     * @throws RefreshTokenException
+     */
+    public function refreshToken(Token $token): LoginResponseDTO
+    {
+        return $this->authDomainService->refreshToken($token);
     }
 
     /**

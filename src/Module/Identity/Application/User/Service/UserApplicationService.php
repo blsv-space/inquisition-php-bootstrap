@@ -25,10 +25,14 @@ final class UserApplicationService
     /**
      * @throws Throwable
      */
-    public function createUserSync(string $userName): User
+    public function createUserSync(
+        string $userName,
+        string $password,
+    ): User
     {
         return new CreateUserSyncJob([
-            'user_name' => $userName,
+            'userName' => $userName,
+            'password' => $password,
         ])->execute();
     }
 

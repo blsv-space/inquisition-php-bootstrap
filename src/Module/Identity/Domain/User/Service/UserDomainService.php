@@ -23,7 +23,8 @@ final class UserDomainService
 
     use SingletonTrait;
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->userRepository = UserRepository::getInstance();
     }
 

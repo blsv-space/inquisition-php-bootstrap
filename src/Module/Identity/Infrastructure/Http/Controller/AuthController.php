@@ -33,4 +33,15 @@ final readonly class AuthController extends AbstractApiController
     {
         return $this->jsonResponse(['message' => 'logout']);
     }
+
+    /**
+     * @param RequestInterface $request
+     * @param array $parameters
+     * @return ResponseInterface
+     * @throws JsonException
+     */
+    public function refreshToken(RequestInterface $request, array $parameters): ResponseInterface
+    {
+        return $this->jsonResponse(['message' => 'token']);
+    }
 }

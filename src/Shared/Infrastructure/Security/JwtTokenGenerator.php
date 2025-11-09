@@ -45,16 +45,9 @@ class JwtTokenGenerator
         $base64UrlHeader = $this->base64UrlEncode(json_encode($header));
         $base64UrlPayload = $this->base64UrlEncode(json_encode($payload));
 
-        $signature = hash_hmac(
-            $algoEnum->value,
-            $base64UrlHeader . '.' . $base64UrlPayload,
-            $secret,
-            true
-        );
+        $signature = $this->generateSignature($algoEnum, $base64UrlHeader, $base64UrlPayload, $secret);
 
-        $base64UrlSignature = $this->base64UrlEncode($signature);
-
-        return $base64UrlHeader . '.' . $base64UrlPayload . '.' . $base64UrlSignature;
+        return $base64UrlHeader . '.' . $base64UrlPayload . '.' . $signature;
     }
 
     /**
@@ -78,8 +71,8 @@ class JwtTokenGenerator
             throw new JwtInvalidTokenException('Invalid token format. Empty part');
         }
 
-        $header = $this->base64UrlDecode($header);
-        $headerData = json_decode($header, true);
+        $headerDecoded = $this->base64UrlDecode($header);
+        $headerData = json_decode($headerDecoded, true);
         if (!$headerData
             || !is_array($headerData)
             || !array_key_exists(self::PARAM_ALGORITHM, $headerData)
@@ -89,16 +82,8 @@ class JwtTokenGenerator
                 . self::PARAM_ALGORITHM . ' parameter');
         }
 
-        $algoEnum = JwtAlgoEnum::tryFrom($headerData[self::PARAM_ALGORITHM]);
-
-        if (!$algoEnum) {
-            throw new JwtInvalidTokenException('Invalid token format. Unsupported algorithm: '
-                . $headerData[self::PARAM_ALGORITHM]);
-        }
-
-        $expectedSignature = $this->base64UrlEncode(
-            hash_hmac($algoEnum->value, $header . '.' . $payload, $secret, true)
-        );
+        $algoEnum = JwtAlgoEnum::getFromJWTIdentifier($headerData[self::PARAM_ALGORITHM]);
+        $expectedSignature = $this->generateSignature($algoEnum, $header, $payload, $secret);
 
         if (!hash_equals($expectedSignature, $signature)) {
             throw new JwtInvalidTokenException('Invalid token signature');
@@ -114,7 +99,7 @@ class JwtTokenGenerator
                 . self::PARAM_EXPIRATION . ' parameter');
         }
 
-        if (new DateTime() < DateTime::createFromFormat(static::DATE_FORMAT, $data[self::PARAM_EXPIRATION])) {
+        if (new DateTime() > DateTime::createFromFormat(static::DATE_FORMAT, $data[self::PARAM_EXPIRATION])) {
             throw new JwtTokenExpiredException();
         }
 
@@ -137,5 +122,23 @@ class JwtTokenGenerator
     private function base64UrlDecode(string $data): string
     {
         return base64_decode(strtr($data, '-_', '+/'));
+    }
+
+    /**
+     * @param JwtAlgoEnum $algoEnum
+     * @param string $base64UrlHeader
+     * @param string $base64UrlPayload
+     * @param string $secret
+     * @return string
+     */
+    public function generateSignature(JwtAlgoEnum $algoEnum, string $base64UrlHeader, string $base64UrlPayload, string $secret): string
+    {
+
+        return $this->base64UrlEncode(hash_hmac(
+            $algoEnum->value,
+            $base64UrlHeader . '.' . $base64UrlPayload,
+            $secret,
+            true
+        ));
     }
 }

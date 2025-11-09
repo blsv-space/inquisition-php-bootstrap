@@ -28,6 +28,12 @@ class RefreshTokenRepository extends AbstractIdentityRepository
 {
     use SingletonTrait;
 
+    public const string FIELD_ID = 'id';
+    public const string FIELD_USER_ID = 'userId';
+    public const string FIELD_TOKEN = 'token';
+    public const string FIELD_EXPIRATION_AT = 'expirationAt';
+    public const string FIELD_CREATED_AT = 'createdAt';
+
     protected const string TABLE_NAME = 'refreshTokens';
     protected const string ENTITY_CLASS_NAME = RefreshToken::class;
 
@@ -46,11 +52,11 @@ class RefreshTokenRepository extends AbstractIdentityRepository
     protected function mapRowToEntity(array $row): EntityInterface
     {
         return new RefreshToken(
-            userId: UserId::fromRaw((int) $row['userId']),
-            token: Token::fromRaw($row['token']),
-            expirationAt: ExpirationAt::fromRaw($row['expirationAt']),
-            createdAt: CreatedAt::fromRaw($row['createdAt']),
-            id: RefreshTokenId::fromRaw($row['id']),
+            userId: UserId::fromRaw((int) $row[self::FIELD_USER_ID]),
+            token: Token::fromRaw($row[self::FIELD_TOKEN]),
+            expirationAt: ExpirationAt::fromRaw($row[self::FIELD_EXPIRATION_AT]),
+            createdAt: CreatedAt::fromRaw($row[self::FIELD_CREATED_AT]),
+            id: RefreshTokenId::fromRaw($row[self::FIELD_ID]),
         );
     }
 
@@ -74,8 +80,8 @@ class RefreshTokenRepository extends AbstractIdentityRepository
 
         return $this->findOneBy(
             [
-                new QueryCriteria(field: 'userId', value: $userId->toRaw()),
-                new QueryCriteria(field: 'expirationAt', value: $now, operator: QueryOperatorEnum::GREATER_THAN),
+                new QueryCriteria(field: self::FIELD_USER_ID, value: $userId->toRaw()),
+                new QueryCriteria(field: self::FIELD_EXPIRATION_AT, value: $now, operator: QueryOperatorEnum::GREATER_THAN),
             ]);
     }
 
@@ -88,7 +94,7 @@ class RefreshTokenRepository extends AbstractIdentityRepository
         $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 
         $this->removeBy(criteria: [
-            new QueryCriteria(field: 'expirationAt', value: $now, operator: QueryOperatorEnum::LESS_THAN),
+            new QueryCriteria(field: self::FIELD_EXPIRATION_AT, value: $now, operator: QueryOperatorEnum::LESS_THAN),
         ]);
     }
 
