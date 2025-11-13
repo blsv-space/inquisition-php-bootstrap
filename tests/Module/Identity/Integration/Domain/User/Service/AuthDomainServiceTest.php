@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\User\Service;
+namespace Tests\Module\Identity\Integration\Domain\User\Service;
 
 use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;

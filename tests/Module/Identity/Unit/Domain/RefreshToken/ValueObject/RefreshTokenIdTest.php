@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\RefreshToken\ValueObject;
+namespace Tests\Module\Identity\Unit\Domain\RefreshToken\ValueObject;
 
 use App\Module\Identity\Domain\RefreshToken\ValueObject\RefreshTokenId;
 use Tests\Shared\UnitTestCase;

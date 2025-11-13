@@ -9,6 +9,18 @@ class LoginResponseDTO extends BaseEntity
     public function __construct(
         public string $jwtToken,
         public string $refreshToken,
-    ) {
+    )
+    {
+    }
+
+    /**
+     * @return array
+     */
+    public function getAsArray(): array
+    {
+        return [
+            'jwtToken' => $this->jwtToken,
+            'refreshToken' => $this->refreshToken,
+        ];
     }
 }

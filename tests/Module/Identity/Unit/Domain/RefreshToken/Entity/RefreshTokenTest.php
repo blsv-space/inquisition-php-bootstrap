@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\RefreshToken\Entity;
+namespace Tests\Module\Identity\Unit\Domain\RefreshToken\Entity;
 
 use App\Module\Identity\Domain\RefreshToken\Entity\RefreshToken;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\ExpirationAt;

@@ -63,6 +63,8 @@ class AuthApplicationService
     /**
      * @param User|null $user
      * @return void
+     * @throws JwtInvalidTokenException
+     * @throws JwtTokenExpiredException
      * @throws PersistenceException
      */
     public function logout(?User $user = null): void
@@ -80,6 +82,8 @@ class AuthApplicationService
      * @param string|null $token
      * @param bool|null $disableCache
      * @return User|null
+     * @throws JwtInvalidTokenException
+     * @throws JwtTokenExpiredException
      * @throws PersistenceException
      */
     public function authUser(?string $token = null, ?bool $disableCache = false): ?User

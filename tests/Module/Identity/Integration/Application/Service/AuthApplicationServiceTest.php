@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\Service;
+namespace Tests\Module\Identity\Integration\Application\Service;
 
 use App\Module\Identity\Application\User\Service\AuthApplicationService;
 use App\Module\Identity\Application\User\Service\Exception\AuthInvalidPasswordException;

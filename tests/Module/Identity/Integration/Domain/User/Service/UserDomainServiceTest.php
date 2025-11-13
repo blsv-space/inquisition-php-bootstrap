@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\User\Service;
+namespace Tests\Module\Identity\Integration\Domain\User\Service;
 
 use App\Module\Identity\Domain\User\Service\UserDomainService;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;

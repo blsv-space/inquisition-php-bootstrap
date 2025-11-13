@@ -19,6 +19,8 @@ class FunctionalTestCase extends AbstractTestCase
      */
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->dispatcher = RequestDispatcher::getInstance();
         $this->flushDatabase();
         $this->resetFixtures();
@@ -189,5 +191,15 @@ class FunctionalTestCase extends AbstractTestCase
             clientIp: $clientIp,
             headers: $headers,
         );
+    }
+
+    /**
+     * @param string[] $routePath
+     * @param string $action
+     * @return string
+     */
+    protected function buildRouteName(array $routePath, string $action): string
+    {
+        return implode('.', $routePath) . '->' . $action;
     }
 }

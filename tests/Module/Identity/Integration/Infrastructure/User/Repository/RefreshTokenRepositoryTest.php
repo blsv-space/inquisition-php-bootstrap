@@ -1,6 +1,6 @@
 <?php
 
-namespace Infrastructure\User\Repository;
+namespace Tests\Module\Identity\Integration\Infrastructure\User\Repository;
 
 use App\Module\Identity\Infrastructure\User\Repository\RefreshTokenRepository;
 use App\Shared\Domain\ValueObject\DateTime;

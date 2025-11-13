@@ -1,6 +1,6 @@
 <?php
 
-namespace Infrastructure\Security;
+namespace Tests\Module\Identity\Unit\Infrastructure\Security;
 
 use App\Module\Identity\Infrastructure\Security\PasswordHashAlgoEnum;
 use App\Module\Identity\Infrastructure\Security\PasswordHasher;
