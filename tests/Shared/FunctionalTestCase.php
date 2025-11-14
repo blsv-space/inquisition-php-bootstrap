@@ -26,6 +26,15 @@ class FunctionalTestCase extends AbstractTestCase
         $this->resetFixtures();
     }
 
+    /**
+     * @param string $path
+     * @param array $params
+     * @return string
+     */
+    protected function buildUri(string $path, array $params = []): string
+    {
+        return $path . '?' . http_build_query($params);
+    }
 
     /**
      * @param HttpMethod $method

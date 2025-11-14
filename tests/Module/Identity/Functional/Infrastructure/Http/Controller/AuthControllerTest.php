@@ -3,6 +3,7 @@
 namespace Tests\Module\Identity\Functional\Infrastructure\Http\Controller;
 
 use App\Module\Identity\Domain\User\Service\AuthDomainService;
+use App\Module\Identity\Infrastructure\Http\Controller\AuthController;
 use App\Module\Identity\Infrastructure\Http\Route\AuthRoute;
 use App\Module\Identity\Infrastructure\Http\Route\IdentityRoute;
 use App\Shared\Infrastructure\Http\Route\AppRoute;
@@ -10,6 +11,7 @@ use Inquisition\Core\Infrastructure\Http\HttpStatusCode;
 use Inquisition\Core\Infrastructure\Http\Router\Exception\RouteNotFoundException;
 use Inquisition\Core\Infrastructure\Http\Router\Router;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use ReflectionException;
 use Tests\Module\Identity\Fixture\RefreshTokenFixture;
 use Tests\Module\Identity\Fixture\UserFixture;
 use Tests\Shared\FunctionalTestCase;
@@ -50,7 +52,7 @@ class AuthControllerTest extends FunctionalTestCase
             UserFixture::USER_NAME => $userName,
         ]);
 
-        $routeName = $this->buildRouteName($this->routePath, 'login');
+        $routeName = $this->buildRouteName($this->routePath, AuthController::ACTION_LOGIN);
         $route = Router::getInstance()->getRouteByName($routeName);
         $this->assertNotNull($route, "Route $routeName not found");
         $httpMethod = $route->methods[0] ?? null;
@@ -75,10 +77,15 @@ class AuthControllerTest extends FunctionalTestCase
         ]);
     }
 
-    public function testItShouldntLoginWithoutPassword(): void
+    /**
+     * @return void
+     * @throws PersistenceException
+     * @throws RouteNotFoundException
+     */
+    public function testItShouldNotLoginWithoutPassword(): void
     {
         $userName = $this->faker->userName();
-        $user = UserFixture::create(
+        UserFixture::create(
             attributes: [
                 UserFixture::USER_NAME => $userName,
             ],
@@ -87,7 +94,7 @@ class AuthControllerTest extends FunctionalTestCase
         $this->assertDatabaseHas(UserFixture::getTableName(), [
             UserFixture::USER_NAME => $userName,
         ]);
-        $routeName = $this->buildRouteName($this->routePath, 'login');
+        $routeName = $this->buildRouteName($this->routePath, AuthController::ACTION_LOGIN);
         $route = Router::getInstance()->getRouteByName($routeName);
         $this->assertNotNull($route, "Route $routeName not found");
         $httpMethod = $route->methods[0] ?? null;
@@ -101,5 +108,89 @@ class AuthControllerTest extends FunctionalTestCase
         );
 
         $this->assertEquals(HttpStatusCode::BAD_REQUEST, $httpResponse->getStatusCode());
+    }
+
+    /**
+     * @return void
+     * @throws PersistenceException
+     * @throws RouteNotFoundException
+     * @throws ReflectionException
+     */
+    public function testItShouldLogout(): void
+    {
+        $user = UserFixture::create(persist: true);
+        $this->actAs($user);
+        RefreshTokenFixture::create(
+            attributes: [RefreshTokenFixture::USER_ID => $user->id->toRaw()],
+            persist: true,
+        );
+        $this->assertDatabaseHas(
+            table: RefreshTokenFixture::getTableName(),
+            param: [RefreshTokenFixture::USER_ID => $user->id],
+        );
+        $routeName = $this->buildRouteName($this->routePath, AuthController::ACTION_LOGOUT);
+        $route = Router::getInstance()->getRouteByName($routeName);
+        $this->assertNotNull($route, "Route $routeName not found");
+        $httpMethod = $route->methods[0] ?? null;
+        $this->assertNotNull($httpMethod, "Method not found for route $routeName");
+        $httpResponse = $this->sendRequest(
+            method: $httpMethod,
+            uri: $route->path,
+        );
+
+        $this->assertEquals(HttpStatusCode::NO_CONTENT, $httpResponse->getStatusCode());
+        $this->assertDatabaseMissing(
+            table: RefreshTokenFixture::getTableName(),
+            param: [RefreshTokenFixture::USER_ID => $user->id],
+        );
+    }
+
+    /**
+     * @return void
+     * @throws PersistenceException
+     * @throws ReflectionException
+     * @throws RouteNotFoundException
+     */
+    public function testItShouldRefreshToken(): void
+    {
+        $user = UserFixture::create(persist: true);
+        $this->actAs($user);
+
+        $refreshToken = RefreshTokenFixture::create(
+            attributes: [RefreshTokenFixture::USER_ID => $user->id->toRaw()],
+            persist: true,
+        );
+
+        $routeName = $this->buildRouteName($this->routePath, AuthController::ACTION_REFRESH_TOKEN);
+        $route = Router::getInstance()->getRouteByName($routeName);
+        $this->assertNotNull($route, "Route $routeName not found");
+        $httpMethod = $route->methods[0] ?? null;
+        $this->assertNotNull($httpMethod, "Method not found for route $routeName");
+        $httpResponse = $this->sendRequest(
+            method: $httpMethod,
+            uri: $route->path,
+            body: [
+                'refreshToken' => $refreshToken->token->toRaw(),
+            ],
+        );
+
+        $this->assertEquals(HttpStatusCode::OK, $httpResponse->getStatusCode());
+        $content = $httpResponse->getContent();
+        $this->assertJson($content);
+        $response = json_decode($content, true);
+
+        $this->assertArrayHasKey('jwtToken', $response);
+        $this->assertNotEmpty($response['jwtToken']);
+        $this->assertArrayHasKey('refreshToken', $response);
+        $this->assertNotEmpty($response['refreshToken']);
+        $this->assertNotEquals($refreshToken->token->toRaw(), $response['refreshToken']);
+        $this->assertDatabaseMissing(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::USER_ID => $user->id->toRaw(),
+            RefreshTokenFixture::TOKEN => $refreshToken->token->toRaw(),
+        ]);
+        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::USER_ID => $user->id->toRaw(),
+            RefreshTokenFixture::TOKEN => $response['refreshToken'],
+        ]);
     }
 }

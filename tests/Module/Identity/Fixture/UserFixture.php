@@ -58,7 +58,7 @@ class UserFixture extends AbstractFixture
      *
      * @throws PersistenceException
      */
-    public static function createMany(int $count, array $attributes = [], bool $persist = true): array
+    public static function createMany(int $count, array $attributes = [], bool $persist = false): array
     {
         $out = [];
         for ($i = 0; $i < $count; $i++) {

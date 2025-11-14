@@ -13,6 +13,7 @@ use App\Shared\Domain\ValueObject\Id;
 use App\Shared\Domain\ValueObject\UpdatedAt;
 use Inquisition\Core\Domain\Service\DomainServiceInterface;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use Inquisition\Core\Infrastructure\Persistence\Repository\QueryCriteria;
 use Inquisition\Foundation\Singleton\SingletonTrait;
 use Throwable;
 
@@ -39,7 +40,7 @@ final class UserDomainService
     }
 
     /**
-     * @param array $criteria
+     * @param QueryCriteria[] $criteria
      * @param array|null $orderBy
      * @param int|null $limit
      * @param int|null $offset
@@ -59,6 +60,16 @@ final class UserDomainService
             limit: $limit,
             offset: $offset,
         );
+    }
+
+    /**
+     * @param QueryCriteria[] $criteria
+     * @return int
+     * @throws PersistenceException
+     */
+    public function count(array $criteria = []): int
+    {
+        return $this->userRepository->count($criteria);
     }
 
     /**

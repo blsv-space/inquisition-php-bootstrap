@@ -68,4 +68,14 @@ final class UserApplicationService
             offset: $offset,
         );
     }
+
+    /**
+     * @param array $criteria
+     * @return int
+     * @throws PersistenceException
+     */
+    public function countUsersBy(array $criteria = []): int
+    {
+        return $this->userDomainService->count($criteria);
+    }
 }

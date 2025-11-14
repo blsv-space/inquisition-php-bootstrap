@@ -57,7 +57,10 @@ class UserDomainServiceTest extends IntegrationTestCase
     public function testItShouldFindUserByCriteria(): void
     {
         $user = UserFixture::create(persist: true);
-        UserFixture::createMany(5);
+        UserFixture::createMany(
+            count: 5,
+            persist: true
+        );
         $users = UserDomainService::getInstance()->findBy([
             new QueryCriteria(
                 field: UserFixture::USER_NAME,

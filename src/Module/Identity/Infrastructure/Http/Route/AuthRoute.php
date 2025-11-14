@@ -26,6 +26,7 @@ final readonly class AuthRoute extends AbstractRouterRegistry
         $routeGroup
             ->prefix('/auth')
             ->post('/login', AuthController::class, AuthController::ACTION_LOGIN)
-            ->post('/logout', AuthController::class, AuthController::ACTION_LOGOUT);
+            ->post('/logout', AuthController::class, AuthController::ACTION_LOGOUT)
+            ->post('/refreshToken', AuthController::class, AuthController::ACTION_REFRESH_TOKEN);
     }
 }
