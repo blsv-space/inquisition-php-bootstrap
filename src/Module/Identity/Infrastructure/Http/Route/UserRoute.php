@@ -16,9 +16,12 @@ final readonly class UserRoute extends AbstractRouterRegistry
     {
     }
 
+    /**
+     * @param RouteGroupInterface|null $parentRouteGroup
+     * @return void
+     */
     public static function register(?RouteGroupInterface $parentRouteGroup = null): void
     {
-
         $routeGroup = self::inheritGroup(
             parentRouteGroup: $parentRouteGroup,
             newGroupName: self::GROUP_NAME
@@ -33,6 +36,4 @@ final readonly class UserRoute extends AbstractRouterRegistry
             ->put('/{id}', UserController::class, RestControllerInterface::ACTION_UPDATE)
             ->delete('/{id}', UserController::class, RestControllerInterface::ACTION_DESTROY);
     }
-
-
 }

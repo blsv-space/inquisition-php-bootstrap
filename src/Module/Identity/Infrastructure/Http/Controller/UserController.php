@@ -3,16 +3,28 @@
 namespace App\Module\Identity\Infrastructure\Http\Controller;
 
 use App\Module\Identity\Application\User\Service\UserApplicationService;
+use App\Module\Identity\Domain\User\Entity\User;
+use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
+use Inquisition\Core\Application\Validation\HttpRequestValidator;
+use Inquisition\Core\Application\Validation\Rule\MaxLengthRule;
+use Inquisition\Core\Application\Validation\Rule\MinLengthRule;
+use Inquisition\Core\Application\Validation\Rule\NotEmptyRule;
+use Inquisition\Core\Application\Validation\Rule\RegexRule;
 use Inquisition\Core\Infrastructure\Http\Controller\AbstractRestController;
 use Inquisition\Core\Infrastructure\Http\Controller\RestControllerInterface;
+use Inquisition\Core\Infrastructure\Http\HttpStatusCode;
 use Inquisition\Core\Infrastructure\Http\Request\RequestInterface;
 use Inquisition\Core\Infrastructure\Http\Response\ResponseInterface;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use Inquisition\Foundation\Config\Config;
 use JsonException;
+use Throwable;
 
 final readonly class UserController extends AbstractRestController
     implements RestControllerInterface
 {
+    public const string FIELD_PASSWORD = 'password';
+
     private UserApplicationService $userApplicationService;
 
     public function __construct()
@@ -30,8 +42,11 @@ final readonly class UserController extends AbstractRestController
     public function index(RequestInterface $request, array $parameters): ResponseInterface
     {
         ['page' => $page, 'per_page' => $per_page] = $this->getPaginationParams($request);
-        $filterParams = $this->getFilterParams($request);
-        ['field' => $field, 'direction' => $direction] = $this->getSortParams($request);;
+        $filterParams = $this->getFilterParams(
+            request: $request,
+            allowedFilters: [UserRepository::FIELD_USER_NAME],
+        );
+        ['field' => $field, 'direction' => $direction] = $this->getSortParams($request);
         $offset = ($page - 1) * $per_page;
 
         $users = $this->userApplicationService->getUsersBy(
@@ -49,6 +64,56 @@ final readonly class UserController extends AbstractRestController
             total: $total,
             page: $page,
             perPage: $per_page,
+        );
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param array $parameters
+     * @return ResponseInterface
+     * @throws JsonException
+     * @throws Throwable
+     */
+    public function store(RequestInterface $request, array $parameters): ResponseInterface
+    {
+        $httpRequestValidator = new HttpRequestValidator();
+        $passwordMinLength = Config::getInstance()->getByPath('security.password_min_length', 8);
+        $httpRequestValidator->addRules([
+            UserRepository::FIELD_USER_NAME => [
+                new NotEmptyRule(),
+                new MinLengthRule(3),
+                new MaxLengthRule(255)
+            ],
+            self::FIELD_PASSWORD => [
+                new NotEmptyRule(),
+                new MinLengthRule($passwordMinLength),
+                new RegexRule(
+                    pattern: '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/',
+                    customMessage: 'Password must contain at least one letter, one number and one special character.',
+                ),
+            ],
+        ]);
+
+        UserApplicationService::getInstance()->createUserSync(
+            userName: $request->getParameter(UserRepository::FIELD_USER_NAME),
+            password: $request->getParameter(self::FIELD_PASSWORD),
+        );
+
+        return $this->jsonResponse([], HttpStatusCode::CREATED);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param array $parameters
+     * @return ResponseInterface
+     * @throws JsonException
+     * @throws PersistenceException
+     */
+    public function show(RequestInterface $request, array $parameters): ResponseInterface
+    {
+
+        return $this->jsonResponse(
+            $this->normalizeData($this->userApplicationService->getUserById((int) $parameters['id']))
         );
     }
 

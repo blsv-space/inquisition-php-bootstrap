@@ -28,12 +28,29 @@ class FunctionalTestCase extends AbstractTestCase
 
     /**
      * @param string $path
-     * @param array $params
+     * @param array $pathParams
+     * @param array $queryParams
      * @return string
      */
-    protected function buildUri(string $path, array $params = []): string
+    protected function buildUri(
+        string $path,
+        array  $pathParams = [],
+        array  $queryParams = [],
+    ): string
     {
-        return $path . '?' . http_build_query($params);
+        foreach ($pathParams as $param => $value) {
+            $path = preg_replace(
+                '~\{' . preg_quote($param, '~') . '(?:<[^>]+>)?}~',
+                $value,
+                $path,
+                1
+            );
+        }
+        if (empty($queryParams)) {
+            return $path;
+        }
+
+        return $path . '?' . http_build_query($queryParams);
     }
 
     /**
@@ -57,9 +74,12 @@ class FunctionalTestCase extends AbstractTestCase
         array      $headers = [],
     ): HttpResponse
     {
+        parse_str(parse_url($uri, PHP_URL_QUERY) ?? '', $query);
+
         $request = new HttpRequest(
             method: $method,
             uri: $uri,
+            query: $query,
             body: $body,
             rawBody: $rawBody,
             files: $files,

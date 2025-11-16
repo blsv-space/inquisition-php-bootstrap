@@ -8,6 +8,7 @@ $config = Config::getInstance();
 $config->merge([
     'security' => [
         'secret' => null,
+        'password_min_length' => 8,
         'refresh_token' => [
             'time_to_live' => '30 days', //https://www.php.net/manual/en/dateinterval.format.php
             'secret' => null,
