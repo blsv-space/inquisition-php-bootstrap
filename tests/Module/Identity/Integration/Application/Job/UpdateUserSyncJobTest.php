@@ -2,10 +2,12 @@
 
 namespace Application\Job;
 
+use App\Module\Identity\Application\User\Event\UserUpdatedEvent;
 use App\Module\Identity\Application\User\Job\UpdateUserSyncJob;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 use Tests\Module\Identity\Fixture\UserFixture;
 use Tests\Shared\IntegrationTestCase;
+use Tests\Shared\TestEventHandler;
 use Throwable;
 
 class UpdateUserSyncJobTest extends IntegrationTestCase
@@ -33,6 +35,8 @@ class UpdateUserSyncJobTest extends IntegrationTestCase
             UserFixture::USER_NAME => $nameNew,
         ];
 
+        $testEventHandler = new TestEventHandler(eventNames: [UserUpdatedEvent::class]);
+
         new UpdateUserSyncJob($payload)->handle();
 
         $this->assertDatabaseMissing(
@@ -50,5 +54,6 @@ class UpdateUserSyncJobTest extends IntegrationTestCase
                 UserFixture::USER_NAME => $nameNew,
             ],
         );
+        $this->assertTrue($testEventHandler->wasDispatched());
     }
 }

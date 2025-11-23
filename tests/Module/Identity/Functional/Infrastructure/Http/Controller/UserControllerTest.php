@@ -210,6 +210,40 @@ class UserControllerTest extends FunctionalTestCase
      * @throws ReflectionException
      * @throws RouteNotFoundException
      */
+    public function testItShouldNotShowUserHashedPassword(): void
+    {
+        $user = UserFixture::create(persist: true);
+        $this->actAs($user);
+
+        $routeName = $this->buildRouteName($this->routePath, RestControllerInterface::ACTION_SHOW);
+        $route = Router::getInstance()->getRouteByName($routeName);
+        $this->assertNotNull($route, "Route $routeName not found");
+        $httpMethod = $route->methods[0] ?? null;
+        $this->assertNotNull($httpMethod, "Method not found for route $routeName");
+
+        $uri = $this->buildUri(
+            path: $route->path,
+            pathParams: ['id' => $user->id->toRaw()],
+        );
+
+        $httpResponse = $this->sendRequest(
+            method: $httpMethod,
+            uri: $uri,
+        );
+
+        $this->assertEquals(HttpStatusCode::OK, $httpResponse->getStatusCode());
+        $content = $httpResponse->getContent();
+        $this->assertJson($content);
+        $response = json_decode($content, true);
+        $this->assertArrayNotHasKey(UserController::FIELD_PASSWORD, $response);
+    }
+
+    /**
+     * @return void
+     * @throws PersistenceException
+     * @throws ReflectionException
+     * @throws RouteNotFoundException
+     */
     public function testItShouldUpdateUser(): void
     {
         $user = UserFixture::create(persist: true);
