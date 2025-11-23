@@ -2,6 +2,7 @@
 
 namespace App\Module\Identity\Application\User\Job;
 
+use App\Module\Identity\Application\User\Event\UserUpdatedEvent;
 use App\Module\Identity\Domain\User\Entity\User;
 use App\Module\Identity\Domain\User\Service\AuthDomainService;
 use App\Module\Identity\Domain\User\Service\UserDomainService;
@@ -10,6 +11,7 @@ use App\Module\Identity\Domain\User\ValueObject\HashedPassword;
 use App\Module\Identity\Domain\User\ValueObject\UserId;
 use App\Module\Identity\Domain\User\ValueObject\UserName;
 use Inquisition\Core\Application\Job\AbstractSyncJob;
+use Inquisition\Core\Infrastructure\Event\EventDispatcher;
 use InvalidArgumentException;
 use Throwable;
 
@@ -36,6 +38,8 @@ class UpdateUserSyncJob extends AbstractSyncJob
         }
         $user->userName = UserName::fromRaw($this->payload['userName']);
         $userDomainService->save($user);
+
+        EventDispatcher::getInstance()->dispatch(new UserUpdatedEvent($user));
 
         return $user;
     }

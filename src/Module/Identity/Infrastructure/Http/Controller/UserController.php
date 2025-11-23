@@ -2,6 +2,7 @@
 
 namespace App\Module\Identity\Infrastructure\Http\Controller;
 
+use App\Module\Identity\Application\User\DTO\UserResponse;
 use App\Module\Identity\Application\User\Service\UserApplicationService;
 use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
 use Inquisition\Core\Application\Validation\HttpRequestValidator;
@@ -54,7 +55,10 @@ final readonly class UserController extends AbstractRestController
             offset: $offset,
         );
 
-        $normalizeData = $this->normalizeData($users);
+        $normalizeData = $this->normalizeData(
+            data: $users,
+            entityResponseClassName: UserResponse::class,
+        );
         $total = $this->userApplicationService->countUsersBy($filterParams);
 
         return $this->jsonPaginatedResponse(
@@ -107,7 +111,10 @@ final readonly class UserController extends AbstractRestController
     {
 
         return $this->jsonResponse(
-            $this->normalizeData($this->userApplicationService->getUserById((int)$parameters['id']))
+            $this->normalizeData(
+                data: $this->userApplicationService->getUserById((int)$parameters['id']),
+                entityResponseClassName: UserResponse::class,
+            )
         );
     }
 
