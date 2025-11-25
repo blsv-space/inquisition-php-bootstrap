@@ -1,12 +1,11 @@
 <?php
 
-namespace Infrastructure\Http\Controller;
+namespace Tests\Module\Identity\Functional\Infrastructure\Http\Controller;
 
 use App\Module\Identity\Infrastructure\Http\Controller\UserController;
 use App\Module\Identity\Infrastructure\Http\Route\IdentityRoute;
 use App\Module\Identity\Infrastructure\Http\Route\UserRoute;
 use App\Shared\Infrastructure\Http\Route\AppRoute;
-use Inquisition\Core\Infrastructure\Http\Controller\AbstractApiController;
 use Inquisition\Core\Infrastructure\Http\Controller\AbstractRestController;
 use Inquisition\Core\Infrastructure\Http\Controller\RestControllerInterface;
 use Inquisition\Core\Infrastructure\Http\HttpStatusCode;

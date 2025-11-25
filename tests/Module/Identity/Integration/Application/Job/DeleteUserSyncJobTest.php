@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\Job;
+namespace Tests\Module\Identity\Integration\Application\Job;
 
 use App\Module\Identity\Application\User\Event\UserDeletedEvent;
 use App\Module\Identity\Application\User\Job\DeleteUserSyncJob;

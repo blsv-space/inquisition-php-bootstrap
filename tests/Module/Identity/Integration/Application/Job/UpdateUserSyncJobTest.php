@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\Job;
+namespace Tests\Module\Identity\Integration\Application\Job;
 
 use App\Module\Identity\Application\User\Event\UserUpdatedEvent;
 use App\Module\Identity\Application\User\Job\UpdateUserSyncJob;
