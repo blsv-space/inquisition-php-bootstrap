@@ -1,6 +1,6 @@
 {
   "name": "blsv-space/inquisition-php-bootstrap",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "project",
   "description": "Bootstrap template for Inquisition PHP framework",
   "license": "MIT",
@@ -11,7 +11,7 @@
   },
   "require-dev": {
     "fakerphp/faker": "1.24",
-    "phpunit/phpunit": "12.3"
+    "phpunit/phpunit": "12.4"
   },
   "autoload": {
     "psr-4": {
@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "test": "phpunit",
-    "post-create-project-cmd": [
+    "generate-secrets": [
       "@php -r \"file_exists('.env') || copy('.env.default', '.env');\"",
       "@php -r \"file_exists('.env.test') || copy('.env.test.default', '.env.test');\"",
       "@php scripts/generate-secrets.php",
@@ -35,6 +35,9 @@
       "@php -r \"echo '1. Edit composer.json (name, description, authors)\\n';\"",
       "@php -r \"echo '2. Configure your .env file\\n';\"",
       "@php -r \"echo '3. Run ./console to see available commands\\n\\n';\""
+    ],
+    "post-create-project-cmd": [
+      "@generate-secrets"
     ]
   },
 
