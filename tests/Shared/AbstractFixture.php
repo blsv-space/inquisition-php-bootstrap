@@ -24,10 +24,24 @@ abstract class AbstractFixture
      */
     protected static array $idPool = [];
 
+    /**
+     * @param array $attributes
+     * @param bool $persist
+     * @return mixed
+     */
     public static abstract function create(array $attributes = [], bool $persist = false);
 
+    /**
+     * @param int $count
+     * @param array $attributes
+     * @param bool $persist
+     * @return mixed
+     */
     public static abstract function createMany(int $count, array $attributes = [], bool $persist = true);
 
+    /**
+     * @return string
+     */
     public static function getTableName(): string
     {
         throw new RuntimeException('Method getTableName not implemented in ' . static::class);
@@ -73,6 +87,9 @@ abstract class AbstractFixture
         return $id;
     }
 
+    /**
+     * @return void
+     */
     protected static function register(): void
     {
         FixtureRegister::register(static::class);

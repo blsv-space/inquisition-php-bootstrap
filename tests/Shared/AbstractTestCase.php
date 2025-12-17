@@ -12,6 +12,7 @@ use Inquisition\Core\Infrastructure\Persistence\DatabaseConnections;
 use Inquisition\Core\Infrastructure\Persistence\DatabaseManagerFactory;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 use Inquisition\Foundation\Config\Config;
+use Inquisition\Foundation\Storage\StorageRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionProperty;
@@ -149,4 +150,14 @@ abstract class AbstractTestCase extends TestCase
         new ReflectionProperty($authApplicationService, 'authUser')->setValue($authApplicationService, $user);
     }
 
+
+
+    /**
+     * @return void
+     */
+    public function cleanUpStorage(): void
+    {
+        $storage = StorageRegistry::getInstance()->storage('local');
+        $storage->deleteDirectoryByPath('');
+    }
 }
