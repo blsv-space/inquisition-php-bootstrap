@@ -9,3 +9,6 @@
 *.rnd
 
 /var
+/storage
+
+/tests/storage
