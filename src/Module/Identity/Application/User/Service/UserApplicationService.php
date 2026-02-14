@@ -1,27 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Module\Identity\Application\User\Service;
 
 use App\Module\Identity\Application\User\Job\CreateUserSyncJob;
 use App\Module\Identity\Application\User\Job\DeleteUserSyncJob;
 use App\Module\Identity\Application\User\Job\UpdateUserSyncJob;
 use App\Module\Identity\Domain\User\Entity\User;
-use App\Module\Identity\Domain\User\Service\UserDomainService;
+use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
 use App\Shared\Domain\ValueObject\Id;
 use Inquisition\Core\Application\Service\ApplicationServiceInterface;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
+use Inquisition\Core\Infrastructure\Persistence\Repository\QueryCriteria;
 use Inquisition\Foundation\Singleton\SingletonTrait;
 use Throwable;
 
-final class UserApplicationService
-    implements ApplicationServiceInterface
+final class UserApplicationService implements ApplicationServiceInterface
 {
-    private UserDomainService $userDomainService;
-
     use SingletonTrait;
+    private UserRepository $userRepository;
 
-    private function __construct() {
-        $this->userDomainService = UserDomainService::getInstance();
+    private function __construct()
+    {
+        $this->userRepository = UserRepository::getInstance();
     }
 
     /**
@@ -30,8 +32,7 @@ final class UserApplicationService
     public function createUserSync(
         string $userName,
         string $password,
-    ): User
-    {
+    ): User {
         return new CreateUserSyncJob([
             'userName' => $userName,
             'password' => $password,
@@ -39,19 +40,14 @@ final class UserApplicationService
     }
 
     /**
-     * @param int $id
-     * @param string $userName
-     * @param string|null $password
      *
-     * @return User
      * @throws Throwable
      */
-    public function updateUser(
+    public function updateUserSync(
         int    $id,
         string $userName,
         ?string $password = null,
-    ): User
-    {
+    ): User {
         return new UpdateUserSyncJob([
             'id' => $id,
             'userName' => $userName,
@@ -60,31 +56,22 @@ final class UserApplicationService
     }
 
     /**
-     * @param int $id
-     * @return void
      * @throws Throwable
      */
-    public function deleteUser(int $id): void
+    public function deleteUserSync(int $id): void
     {
         new DeleteUserSyncJob(['id' => $id])->execute();
     }
 
     /**
-     * @param int $id
-     * @return User|null
      * @throws PersistenceException
      */
     public function getUserById(int $id): ?User
     {
-        return $this->userDomainService->findUserById(Id::fromRaw($id));
+        return $this->userRepository->findById(Id::fromRaw($id));
     }
 
     /**
-     * @param array $criteria
-     * @param array|null $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
-     * @return array
      * @throws PersistenceException
      */
     public function getUsersBy(
@@ -92,9 +79,8 @@ final class UserApplicationService
         ?array $orderBy = null,
         ?int   $limit = null,
         ?int   $offset = null,
-    ): array
-    {
-        return $this->userDomainService->findBy(
+    ): array {
+        return $this->userRepository->findBy(
             criteria: $criteria,
             orderBy: $orderBy,
             limit: $limit,
@@ -103,12 +89,35 @@ final class UserApplicationService
     }
 
     /**
-     * @param array $criteria
-     * @return int
+     * @param  QueryCriteria[]      $criteria
      * @throws PersistenceException
      */
     public function countUsersBy(array $criteria = []): int
     {
-        return $this->userDomainService->count($criteria);
+        return $this->userRepository->count($criteria);
+    }
+
+    /**
+     * @throws PersistenceException
+     */
+    public function delete(User $user): void
+    {
+        $this->userRepository->removeById($user);
+    }
+
+    /**
+     * @throws PersistenceException
+     */
+    public function save(User $user): void
+    {
+        $this->userRepository->save($user);
+    }
+
+    /**
+     * @throws PersistenceException
+     */
+    public function update(User $user): void
+    {
+        $this->userRepository->updateById($user);
     }
 }

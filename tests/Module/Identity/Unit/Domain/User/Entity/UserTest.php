@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Module\Identity\Unit\Domain\User\Entity;
 
 use App\Module\Identity\Domain\User\Entity\User;
@@ -13,8 +15,7 @@ use Tests\Shared\UnitTestCase;
 
 final class UserTest extends UnitTestCase
 {
-
-    public function testItShouldCreateAUser(): void
+    public function test_it_should_create_a_user(): void
     {
         $id = $this->faker->numberBetween(1, PHP_INT_MAX);
         $name = $this->faker->userName();
@@ -35,11 +36,11 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($password, $user->hashedPassword->toRaw());
         $this->assertEquals(
             $createdAt->format(DateTime::FORMAT),
-            $user->createdAt->toDateTime()->format(DateTime::FORMAT)
+            $user->createdAt->toDateTime()->format(DateTime::FORMAT),
         );
         $this->assertEquals(
             $updateAt->format(DateTime::FORMAT),
-            $user->updatedAt->toDateTime()->format(DateTime::FORMAT)
+            $user->updatedAt->toDateTime()->format(DateTime::FORMAT),
         );
     }
 

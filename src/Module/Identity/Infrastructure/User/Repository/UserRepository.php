@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Module\Identity\Infrastructure\User\Repository;
 
 use App\Module\Identity\Domain\User\Entity\User;
@@ -18,12 +20,15 @@ use Inquisition\Foundation\Singleton\SingletonTrait;
 use InvalidArgumentException;
 
 /**
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
- * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- * @method User|null findById(ValueObjectInterface $entity)
+ * @method User|null  findOneBy(QueryCriteria[] $criteria = [])
+ * @method list<User> findAll()
+ * @method list<User> findBy(QueryCriteria[] $criteria = [], ?array $orderBy = null, ?int $limit = null, ?int $offset = null)
+ * @method User|null  findById(ValueObjectInterface $id)
+ *
+ * @extends AbstractIdentityRepository<User>
+ * @implements UserRepositoryInterface<User>
  */
-class UserRepository extends AbstractIdentityRepository
-    implements UserRepositoryInterface
+class UserRepository extends AbstractIdentityRepository implements UserRepositoryInterface
 {
     use SingletonTrait;
 
@@ -36,15 +41,15 @@ class UserRepository extends AbstractIdentityRepository
     protected const string TABLE_NAME = 'users';
     protected const string ENTITY_CLASS_NAME = User::class;
 
-    private function __construct() {
+    private function __construct()
+    {
         parent::__construct();
     }
 
     /**
-     * @param array $row
-     * @return User
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function mapRowToEntity(array $row): EntityInterface
     {
         return new User(
@@ -56,26 +61,37 @@ class UserRepository extends AbstractIdentityRepository
         );
     }
 
-    /**
-     * @param EntityInterface $entity
-     * @return array
-     */
+    #[\Override]
     protected function mapEntityToRow(EntityInterface $entity): array
     {
         return $entity->getAsArray();
     }
 
     /**
-     * @param UserName $userName
-     * @return User|null
      * @throws PersistenceException
      */
+    #[\Override]
     public function findByUserName(UserName $userName): ?User
     {
         return $this->findOneBy(
             [new QueryCriteria(
                 field: self::FIELD_USER_NAME,
-                value: $userName->toRaw()
-            )]);
+                value: $userName->toRaw(),
+            )],
+        );
+    }
+
+    public function mapArrayToEntity(array $array): User
+    {
+        $createdAt = isset($array['createdAt']) ? CreatedAt::fromRaw($array['createdAt']) : null;
+        $updateAt = isset($array['updatedAt']) ? UpdatedAt::fromRaw($array['updatedAt']) : null;
+
+        return new User(
+            userName: UserName::fromRaw($array['userName']),
+            hashedPassword: HashedPassword::fromRaw($array['hashedPassword']),
+            id: !empty($array['id']) ? UserId::fromRaw($array['id']) : null,
+            createdAt: $createdAt,
+            updatedAt: $updateAt,
+        );
     }
 }

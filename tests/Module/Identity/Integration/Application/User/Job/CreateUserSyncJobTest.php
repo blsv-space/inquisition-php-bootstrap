@@ -1,6 +1,8 @@
 <?php
 
-namespace Tests\Module\Identity\Integration\Application\Job;
+declare(strict_types=1);
+
+namespace Tests\Module\Identity\Integration\Application\User\Job;
 
 use App\Module\Identity\Application\User\Event\UserCreatedEvent;
 use App\Module\Identity\Application\User\Job\CreateUserSyncJob;
@@ -14,10 +16,9 @@ use Throwable;
 class CreateUserSyncJobTest extends IntegrationTestCase
 {
     /**
-     * @return void
      * @throws Throwable
      */
-    public function testHandleCreatesAndSavesUser(): void
+    public function test_handle_creates_and_saves_user(): void
     {
         $payload = [
             'userName' => $this->faker->userName(),
@@ -32,11 +33,10 @@ class CreateUserSyncJobTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws Throwable
      * @throws PersistenceException
      */
-    public function testHandleThrowsExceptionIfUserAlreadyExists(): void
+    public function test_handle_throws_exception_if_user_already_exists(): void
     {
         $payload = [
             'userName' => $this->faker->userName(),
@@ -50,10 +50,9 @@ class CreateUserSyncJobTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws Throwable
      */
-    public function testHandleCreatesAndSavesUserShouldDispatchEvent(): void
+    public function test_handle_creates_and_saves_user_should_dispatch_event(): void
     {
         $payload = [
             'userName' => $this->faker->userName(),
