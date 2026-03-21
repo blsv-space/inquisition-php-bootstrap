@@ -1,21 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Module\Identity\Infrastructure\Security;
 
+use App\Module\Identity\Domain\User\Security\PasswordVerifyInterface;
 use Inquisition\Foundation\Singleton\SingletonInterface;
 use Inquisition\Foundation\Singleton\SingletonTrait;
 
-final class PasswordHasher
-    implements SingletonInterface
+final class PasswordHasher implements PasswordVerifyInterface, SingletonInterface
 {
     use SingletonTrait;
 
-    /**
-     * @param string $plain
-     * @param PasswordHashAlgoEnum|null $algoEnum
-     *
-     * @return string
-     */
+    #[\Override]
     public function hash(string $plain, ?PasswordHashAlgoEnum $algoEnum = null): string
     {
         $algoEnum = $algoEnum ?? PasswordHashAlgoEnum::BCRYPT;
@@ -23,22 +20,13 @@ final class PasswordHasher
         return password_hash($plain, $algoEnum->getPHPConstant());
     }
 
-    /**
-     * @param string $plain
-     * @param string $hashed
-     *
-     * @return bool
-     */
+    #[\Override]
     public function verify(string $plain, string $hashed): bool
     {
         return password_verify($plain, $hashed);
     }
 
-    /**
-     * @param string $hashA
-     * @param string $hashB
-     * @return bool
-     */
+    #[\Override]
     public function hashIsEqual(string $hashA, string $hashB): bool
     {
         return hash_equals($hashA, $hashB);

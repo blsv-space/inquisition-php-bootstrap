@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Module\Identity\Infrastructure\Http\Controller;
 
 use App\Module\Identity\Application\User\Service\AuthApplicationService;
 use App\Module\Identity\Application\User\Service\Exception\AuthInvalidPasswordException;
 use App\Module\Identity\Application\User\Service\Exception\AuthUserNotFoundException;
-use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
+use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenDomainException;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
 use App\Shared\Infrastructure\Security\Exception\JwtInvalidTokenException;
 use App\Shared\Infrastructure\Security\Exception\JwtTokenExpiredException;
@@ -26,9 +28,6 @@ final readonly class AuthController extends AbstractApiController
     public const string ACTION_REFRESH_TOKEN = 'refreshToken';
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws AuthInvalidPasswordException
      * @throws AuthUserNotFoundException
@@ -52,9 +51,6 @@ final readonly class AuthController extends AbstractApiController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws PersistenceException
      * @throws JwtInvalidTokenException
@@ -71,12 +67,9 @@ final readonly class AuthController extends AbstractApiController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws PersistenceException
-     * @throws RefreshTokenException
+     * @throws RefreshTokenDomainException
      */
     public function refreshToken(RequestInterface $request, array $parameters): ResponseInterface
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Module\Identity\Infrastructure\Http\Controller;
 
 use App\Module\Identity\Application\User\DTO\UserResponse;
@@ -19,8 +21,7 @@ use Inquisition\Foundation\Config\Config;
 use JsonException;
 use Throwable;
 
-final readonly class UserController extends AbstractRestController
-    implements RestControllerInterface
+final readonly class UserController extends AbstractRestController implements RestControllerInterface
 {
     public const string FIELD_PASSWORD = 'password';
 
@@ -32,12 +33,10 @@ final readonly class UserController extends AbstractRestController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws PersistenceException
      * @throws JsonException
      */
+    #[\Override]
     public function index(RequestInterface $request, array $parameters): ResponseInterface
     {
         ['page' => $page, 'per_page' => $per_page] = $this->getPaginationParams($request);
@@ -70,12 +69,10 @@ final readonly class UserController extends AbstractRestController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws Throwable
      */
+    #[\Override]
     public function store(RequestInterface $request, array $parameters): ResponseInterface
     {
         $httpRequestValidator = new HttpRequestValidator();
@@ -84,7 +81,7 @@ final readonly class UserController extends AbstractRestController
             UserRepository::FIELD_USER_NAME => [
                 new NotEmptyRule(),
                 new MinLengthRule(2),
-                new MaxLengthRule(255)
+                new MaxLengthRule(255),
             ],
             self::FIELD_PASSWORD => [
                 new NotEmptyRule(),
@@ -101,31 +98,27 @@ final readonly class UserController extends AbstractRestController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws PersistenceException
      */
+    #[\Override]
     public function show(RequestInterface $request, array $parameters): ResponseInterface
     {
 
         return $this->jsonResponse(
             $this->normalizeData(
-                data: $this->userApplicationService->getUserById((int)$parameters['id']),
+                data: $this->userApplicationService->getUserById((int) $parameters['id']),
                 entityResponseClassName: UserResponse::class,
-            )
+            ),
         );
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
      *
-     * @return ResponseInterface
      * @throws JsonException
      * @throws Throwable
      */
+    #[\Override]
     public function update(RequestInterface $request, array $parameters): ResponseInterface
     {
         $httpRequestValidator = new HttpRequestValidator();
@@ -134,15 +127,15 @@ final readonly class UserController extends AbstractRestController
             UserRepository::FIELD_USER_NAME => [
                 new NotEmptyRule(),
                 new MinLengthRule(2),
-                new MaxLengthRule(255)
+                new MaxLengthRule(255),
             ],
             self::FIELD_PASSWORD => [
                 new MinLengthRule($passwordMinLength),
             ],
         ]);
 
-        $this->userApplicationService->updateUser(
-            id: (int)$parameters['id'],
+        $this->userApplicationService->updateUserSync(
+            id: (int) $parameters['id'],
             userName: $request->getParameter(UserRepository::FIELD_USER_NAME),
             password: $request->getParameter(self::FIELD_PASSWORD),
         );
@@ -151,15 +144,13 @@ final readonly class UserController extends AbstractRestController
     }
 
     /**
-     * @param RequestInterface $request
-     * @param array $parameters
-     * @return ResponseInterface
      * @throws JsonException
      * @throws Throwable
      */
+    #[\Override]
     public function destroy(RequestInterface $request, array $parameters): ResponseInterface
     {
-        $this->userApplicationService->deleteUser((int)$parameters['id']);
+        $this->userApplicationService->deleteUserSync((int) $parameters['id']);
         return $this->jsonResponse([], HttpStatusCode::NO_CONTENT);
     }
 }

@@ -1,11 +1,14 @@
 <?php
 
-namespace Tests\Module\Identity\Integration\Application\Service;
+declare(strict_types=1);
+
+namespace Tests\Module\Identity\Integration\Application\User\Service;
 
 use App\Module\Identity\Application\User\Service\AuthApplicationService;
 use App\Module\Identity\Application\User\Service\Exception\AuthInvalidPasswordException;
 use App\Module\Identity\Application\User\Service\Exception\AuthUserNotFoundException;
-use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenException;
+use App\Module\Identity\Application\User\Service\Exception\RefreshTokenException;
+use App\Module\Identity\Domain\RefreshToken\Service\Exception\RefreshTokenDomainException;
 use App\Module\Identity\Domain\RefreshToken\ValueObject\Token;
 use App\Module\Identity\Infrastructure\Security\PasswordHasher;
 use App\Shared\Domain\ValueObject\DateTime;
@@ -17,12 +20,11 @@ use Tests\Shared\IntegrationTestCase;
 class AuthApplicationServiceTest extends IntegrationTestCase
 {
     /**
-     * @return void
      * @throws AuthInvalidPasswordException
      * @throws AuthUserNotFoundException
      * @throws PersistenceException
      */
-    public function testItShouldLoginUser(): void
+    public function test_it_should_login_user(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -42,12 +44,11 @@ class AuthApplicationServiceTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws AuthInvalidPasswordException
      * @throws AuthUserNotFoundException
      * @throws PersistenceException
      */
-    public function testItShouldThrowExceptionIfUserNotFound(): void
+    public function test_it_should_throw_exception_if_user_not_found(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -56,12 +57,11 @@ class AuthApplicationServiceTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws AuthInvalidPasswordException
      * @throws AuthUserNotFoundException
      * @throws PersistenceException
      */
-    public function testItShouldThrowExceptionIfPasswordIsInvalid(): void
+    public function test_it_should_throw_exception_if_password_is_invalid(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -77,10 +77,9 @@ class AuthApplicationServiceTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws PersistenceException
      */
-    public function testItShouldLogoutUser(): void
+    public function test_it_should_logout_user(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -112,11 +111,11 @@ class AuthApplicationServiceTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws PersistenceException
+     * @throws RefreshTokenDomainException
      * @throws RefreshTokenException
      */
-    public function testItShouldRefreshUserToken(): void
+    public function test_it_should_refresh_user_token(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -153,24 +152,24 @@ class AuthApplicationServiceTest extends IntegrationTestCase
     }
 
     /**
-     * @return void
      * @throws PersistenceException
+     * @throws RefreshTokenDomainException
      * @throws RefreshTokenException
      */
-    public function testItShouldThrowExceptionIfRefreshTokenIsInvalid(): void
+    public function test_it_should_throw_exception_if_refresh_token_is_invalid(): void
     {
         $this->expectException(RefreshTokenException::class);
         AuthApplicationService::getInstance()->refreshToken(
-            token: Token::fromRaw($this->faker->sha256())
+            token: Token::fromRaw($this->faker->sha256()),
         );
     }
 
     /**
-     * @return void
      * @throws PersistenceException
+     * @throws RefreshTokenDomainException
      * @throws RefreshTokenException
      */
-    public function testItShouldThrowExceptionIfRefreshTokenIsExpired(): void
+    public function test_it_should_throw_exception_if_refresh_token_is_expired(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -184,7 +183,7 @@ class AuthApplicationServiceTest extends IntegrationTestCase
         $refreshToken = RefreshTokenFixture::create(
             attributes: [
                 RefreshTokenFixture::USER_ID => $user->id->toRaw(),
-                RefreshTokenFixture::EXPIRATION_AT => $this->faker->dateTime('-1 hour')->format(DateTime::FORMAT)
+                RefreshTokenFixture::EXPIRATION_AT => $this->faker->dateTime('-1 hour')->format(DateTime::FORMAT),
             ],
             persist: true,
         );
@@ -193,11 +192,16 @@ class AuthApplicationServiceTest extends IntegrationTestCase
             table: RefreshTokenFixture::getTableName(),
             param: [RefreshTokenFixture::USER_ID => $user->id->toRaw()],
         );
-        $this->expectException(RefreshTokenException::class);
+        $this->expectException(RefreshTokenDomainException::class);
         AuthApplicationService::getInstance()->refreshToken($refreshToken->token)->refreshToken;
     }
 
-    public function testItShouldAuthUserByJWTToken(): void
+    /**
+     * @throws AuthInvalidPasswordException
+     * @throws AuthUserNotFoundException
+     * @throws PersistenceException
+     */
+    public function test_it_should_auth_user_by_jwt_token(): void
     {
         $userName = $this->faker->userName();
         $password = $this->faker->password();
@@ -223,6 +227,51 @@ class AuthApplicationServiceTest extends IntegrationTestCase
         );
         $this->assertNotNull($user);
         $this->assertEquals($userName, $user->userName->toRaw());
+    }
+
+    /**
+     * @throws PersistenceException
+     */
+    public function test_it_should_auth_user(): void
+    {
+        $user = UserFixture::create(persist: true);
+        $loginResponseDTO = AuthApplicationService::getInstance()->auth($user);
+        $this->assertNotEmpty($loginResponseDTO->refreshToken);
+        $this->assertNotEmpty($loginResponseDTO->jwtToken);
+        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::TOKEN => $loginResponseDTO->refreshToken,
+        ]);
+    }
+
+    /**
+     * @throws PersistenceException
+     * @throws RefreshTokenDomainException
+     * @throws RefreshTokenException
+     */
+    public function test_it_should_refresh_token(): void
+    {
+        $user = UserFixture::create(persist: true);
+        $loginResponseDTO = AuthApplicationService::getInstance()->auth($user);
+        $this->assertNotEmpty($loginResponseDTO->refreshToken);
+        $this->assertNotEmpty($loginResponseDTO->jwtToken);
+        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::USER_ID => $user->id->toRaw(),
+            RefreshTokenFixture::TOKEN => $loginResponseDTO->refreshToken,
+        ]);
+
+        $loginResponseDTOByRefreshToken = AuthApplicationService::getInstance()
+            ->refreshToken(Token::fromRaw($loginResponseDTO->refreshToken));
+        $this->assertNotEmpty($loginResponseDTOByRefreshToken->refreshToken);
+        $this->assertNotEmpty($loginResponseDTOByRefreshToken->jwtToken);
+        $this->assertNotEquals($loginResponseDTO->refreshToken, $loginResponseDTOByRefreshToken->refreshToken);
+        $this->assertDatabaseMissing(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::USER_ID => $user->id->toRaw(),
+            RefreshTokenFixture::TOKEN => $loginResponseDTO->refreshToken,
+        ]);
+        $this->assertDatabaseHas(RefreshTokenFixture::getTableName(), [
+            RefreshTokenFixture::USER_ID => $user->id->toRaw(),
+            RefreshTokenFixture::TOKEN => $loginResponseDTOByRefreshToken->refreshToken,
+        ]);
     }
 
 }
