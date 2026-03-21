@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "262728f7d819be5b2f533994f22babcf",
+    "content-hash": "badb5735ef3df29ca70821555651bc77",
     "packages": [
         {
             "name": "blsv-space/inquisition-php",
