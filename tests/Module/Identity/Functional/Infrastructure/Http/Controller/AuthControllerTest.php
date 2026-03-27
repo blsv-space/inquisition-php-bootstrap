@@ -126,7 +126,7 @@ class AuthControllerTest extends FunctionalTestCase
         );
         $this->assertDatabaseHas(
             table: RefreshTokenFixture::getTableName(),
-            param: [RefreshTokenFixture::USER_ID => $user->id],
+            param: [RefreshTokenFixture::USER_ID => $user->id->toRaw()],
         );
         $routeName = $this->buildRouteName($this->routePath, AuthController::ACTION_LOGOUT);
         $route = Router::getInstance()->getRouteByName($routeName);
@@ -141,7 +141,7 @@ class AuthControllerTest extends FunctionalTestCase
         $this->assertEquals(HttpStatusCode::NO_CONTENT, $httpResponse->getStatusCode());
         $this->assertDatabaseMissing(
             table: RefreshTokenFixture::getTableName(),
-            param: [RefreshTokenFixture::USER_ID => $user->id],
+            param: [RefreshTokenFixture::USER_ID => $user->id->toRaw()],
         );
     }
 
