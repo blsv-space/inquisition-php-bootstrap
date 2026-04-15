@@ -25,8 +25,6 @@ class FunctionalTestCase extends AbstractTestCase
         parent::setUp();
 
         $this->dispatcher = RequestDispatcher::getInstance();
-        $this->flushDatabase();
-        $this->resetFixtures();
     }
 
     protected function buildUri(

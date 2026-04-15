@@ -1,13 +1,13 @@
 {
   "name": "blsv-space/inquisition-php-bootstrap",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "project",
   "description": "Bootstrap template for Inquisition PHP framework",
   "license": "MIT",
   "require": {
     "php": "^8.5",
     "ext-pdo": "*",
-    "blsv-space/inquisition-php": "0.4.3"
+    "blsv-space/inquisition-php": "0.4.4"
   },
   "require-dev": {
     "fakerphp/faker": "1.24",

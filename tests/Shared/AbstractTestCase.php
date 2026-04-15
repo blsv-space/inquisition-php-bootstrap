@@ -30,10 +30,16 @@ abstract class AbstractTestCase extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * @throws PersistenceException
+     */
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->flushDatabase();
+        $this->resetFixtures();
 
         $this->faker = Factory::create();
     }
