@@ -6,6 +6,7 @@ namespace Tests\Module\Identity\Integration\Application\User\Job;
 
 use App\Module\Identity\Application\User\Event\UserCreatedEvent;
 use App\Module\Identity\Application\User\Job\CreateUserSyncJob;
+use App\Shared\Domain\ValueObject\CreatedAt;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
 use PDOException;
 use Tests\Module\Identity\Fixture\UserFixture;
@@ -20,9 +21,12 @@ class CreateUserSyncJobTest extends IntegrationTestCase
      */
     public function test_handle_creates_and_saves_user(): void
     {
+        $date = CreatedAt::now()->toRaw();
         $payload = [
             'userName' => $this->faker->userName(),
             'password' => $this->faker->password(),
+            'createdAt' => $date,
+            'updatedAt' => $date,
         ];
 
         $createUserSyncJob = new CreateUserSyncJob($payload);
@@ -38,9 +42,12 @@ class CreateUserSyncJobTest extends IntegrationTestCase
      */
     public function test_handle_throws_exception_if_user_already_exists(): void
     {
+        $date = CreatedAt::now()->toRaw();
         $payload = [
             'userName' => $this->faker->userName(),
             'password' => $this->faker->password(),
+            'createdAt' => $date,
+            'updatedAt' => $date,
         ];
         UserFixture::create([UserFixture::USER_NAME => $payload['userName']], true);
         $this->expectException(PDOException::class);
@@ -54,9 +61,12 @@ class CreateUserSyncJobTest extends IntegrationTestCase
      */
     public function test_handle_creates_and_saves_user_should_dispatch_event(): void
     {
+        $date = CreatedAt::now()->toRaw();
         $payload = [
             'userName' => $this->faker->userName(),
             'password' => $this->faker->password(),
+            'createdAt' => $date,
+            'updatedAt' => $date,
         ];
 
         $testEventHandler = new TestEventHandler(

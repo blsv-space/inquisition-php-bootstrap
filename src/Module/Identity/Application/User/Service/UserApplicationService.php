@@ -9,6 +9,7 @@ use App\Module\Identity\Application\User\Job\DeleteUserSyncJob;
 use App\Module\Identity\Application\User\Job\UpdateUserSyncJob;
 use App\Module\Identity\Domain\User\Entity\User;
 use App\Module\Identity\Infrastructure\User\Repository\UserRepository;
+use App\Shared\Domain\ValueObject\CreatedAt;
 use App\Shared\Domain\ValueObject\Id;
 use Inquisition\Core\Application\Service\ApplicationServiceInterface;
 use Inquisition\Core\Infrastructure\Persistence\Exception\PersistenceException;
@@ -33,9 +34,13 @@ final class UserApplicationService implements ApplicationServiceInterface
         string $userName,
         string $password,
     ): User {
+        $dateTime = CreatedAt::now()->toRaw();
+
         return new CreateUserSyncJob([
             'userName' => $userName,
             'password' => $password,
+            'createdAt' => $dateTime,
+            'updatedAt' => $dateTime,
         ])->execute();
     }
 
